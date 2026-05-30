@@ -9,38 +9,153 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as WebinarSlugRouteImport } from './routes/webinar/$slug'
+import { Route as AdminWebinarsIndexRouteImport } from './routes/admin/webinars/index'
+import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
+import { Route as AdminWebinarsNewRouteImport } from './routes/admin/webinars/new'
+import { Route as AdminWebinarsIdRouteImport } from './routes/admin/webinars/$id'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const WebinarSlugRoute = WebinarSlugRouteImport.update({
+  id: '/webinar/$slug',
+  path: '/webinar/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWebinarsIndexRoute = AdminWebinarsIndexRouteImport.update({
+  id: '/webinars/',
+  path: '/webinars/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsIndexRoute = AdminLeadsIndexRouteImport.update({
+  id: '/leads/',
+  path: '/leads/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminWebinarsNewRoute = AdminWebinarsNewRouteImport.update({
+  id: '/webinars/new',
+  path: '/webinars/new',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminWebinarsIdRoute = AdminWebinarsIdRouteImport.update({
+  id: '/webinars/$id',
+  path: '/webinars/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/login': typeof LoginRoute
+  '/webinar/$slug': typeof WebinarSlugRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
+  '/admin/webinars/new': typeof AdminWebinarsNewRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/webinars/': typeof AdminWebinarsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/webinar/$slug': typeof WebinarSlugRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
+  '/admin/webinars/new': typeof AdminWebinarsNewRoute
+  '/admin/leads': typeof AdminLeadsIndexRoute
+  '/admin/webinars': typeof AdminWebinarsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/login': typeof LoginRoute
+  '/webinar/$slug': typeof WebinarSlugRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
+  '/admin/webinars/new': typeof AdminWebinarsNewRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/webinars/': typeof AdminWebinarsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/webinar/$slug'
+    | '/admin/'
+    | '/admin/webinars/$id'
+    | '/admin/webinars/new'
+    | '/admin/leads/'
+    | '/admin/webinars/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/webinar/$slug'
+    | '/admin'
+    | '/admin/webinars/$id'
+    | '/admin/webinars/new'
+    | '/admin/leads'
+    | '/admin/webinars'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/webinar/$slug'
+    | '/admin/'
+    | '/admin/webinars/$id'
+    | '/admin/webinars/new'
+    | '/admin/leads/'
+    | '/admin/webinars/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  WebinarSlugRoute: typeof WebinarSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +163,85 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/webinar/$slug': {
+      id: '/webinar/$slug'
+      path: '/webinar/$slug'
+      fullPath: '/webinar/$slug'
+      preLoaderRoute: typeof WebinarSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/webinars/': {
+      id: '/admin/webinars/'
+      path: '/webinars'
+      fullPath: '/admin/webinars/'
+      preLoaderRoute: typeof AdminWebinarsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leads/': {
+      id: '/admin/leads/'
+      path: '/leads'
+      fullPath: '/admin/leads/'
+      preLoaderRoute: typeof AdminLeadsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/webinars/new': {
+      id: '/admin/webinars/new'
+      path: '/webinars/new'
+      fullPath: '/admin/webinars/new'
+      preLoaderRoute: typeof AdminWebinarsNewRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/webinars/$id': {
+      id: '/admin/webinars/$id'
+      path: '/webinars/$id'
+      fullPath: '/admin/webinars/$id'
+      preLoaderRoute: typeof AdminWebinarsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminWebinarsIdRoute: typeof AdminWebinarsIdRoute
+  AdminWebinarsNewRoute: typeof AdminWebinarsNewRoute
+  AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
+  AdminWebinarsIndexRoute: typeof AdminWebinarsIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+  AdminWebinarsIdRoute: AdminWebinarsIdRoute,
+  AdminWebinarsNewRoute: AdminWebinarsNewRoute,
+  AdminLeadsIndexRoute: AdminLeadsIndexRoute,
+  AdminWebinarsIndexRoute: AdminWebinarsIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  LoginRoute: LoginRoute,
+  WebinarSlugRoute: WebinarSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

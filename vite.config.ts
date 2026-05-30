@@ -12,4 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    envPrefix: ["VITE_", "OPENROUTER_", "SUPABASE_"],
+  },
 });
