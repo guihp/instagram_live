@@ -50,7 +50,7 @@ function formatAppearTime(minutes: number): string {
   return formatDuration(totalSeconds);
 }
 
-function inferKind(message: ChatMessageDraft): ChatMessageDraft["kind"] {
+function inferKind(message: ChatMessageDraft): NonNullable<ChatMessageDraft["kind"]> {
   if (message.kind) return message.kind;
   const text = message.message.trim();
   if (text.endsWith("?")) return "question";

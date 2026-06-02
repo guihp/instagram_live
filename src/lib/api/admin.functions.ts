@@ -200,7 +200,7 @@ export const updateWebinar = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("webinars")
-      .update(data.webinar as Record<string, unknown>)
+      .update(data.webinar as never)
       .eq("id", data.id);
 
     if (error) throw new Error(error.message);

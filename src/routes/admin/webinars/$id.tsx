@@ -42,7 +42,7 @@ function EditWebinarPage() {
           waiting_description: webinar.waiting_description ?? "",
           ai_context: webinar.ai_context ?? "",
           ai_assistant_name: webinar.ai_assistant_name ?? "",
-          formFields: formFields.map((f) => ({
+          formFields: formFields.map((f: any) => ({
             field_key: f.field_key,
             label: f.label,
             field_type: f.field_type,
@@ -52,13 +52,13 @@ function EditWebinarPage() {
             phone_region: f.field_type === "tel" ? (f.phone_region ?? "BR") : null,
             isDefault: ["name", "phone", "email"].includes(f.field_key),
           })),
-          chatMessages: chatMessages.map((m) => ({
+          chatMessages: chatMessages.map((m: any) => ({
             author_name: m.author_name,
             message: m.message,
             appear_at_minutes: secondsToMinutes(Number(m.appear_at_seconds)),
             sort_order: m.sort_order,
           })),
-          triggers: triggers.map((t) => {
+          triggers: triggers.map((t: any) => {
             const seconds = Number(t.appear_at_seconds);
             const legacyCartEnd =
               t.trigger_type === "cart" && !t.appear_mode && seconds === 0;

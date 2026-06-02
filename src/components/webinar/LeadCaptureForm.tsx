@@ -38,8 +38,8 @@ export function LeadCaptureForm({
   const schemaShape: Record<string, z.ZodTypeAny> = {};
   fields.forEach((field) => {
     if (field.field_type === "email") {
-      let validator = z.string().email("E-mail inválido");
-      if (field.required) validator = validator.min(1, `${field.label} é obrigatório`);
+      let validator: z.ZodTypeAny = z.string().email("E-mail inválido");
+      if (field.required) validator = (validator as z.ZodString).min(1, `${field.label} é obrigatório`);
       else validator = validator.optional().or(z.literal(""));
       schemaShape[field.field_key] = validator;
       return;
@@ -61,8 +61,8 @@ export function LeadCaptureForm({
       return;
     }
 
-    let validator = z.string();
-    if (field.required) validator = validator.min(1, `${field.label} é obrigatório`);
+    let validator: z.ZodTypeAny = z.string();
+    if (field.required) validator = (validator as z.ZodString).min(1, `${field.label} é obrigatório`);
     else validator = validator.optional().or(z.literal(""));
     schemaShape[field.field_key] = validator;
   });
