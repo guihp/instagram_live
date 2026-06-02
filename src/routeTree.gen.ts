@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +20,11 @@ import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
 import { Route as AdminWebinarsNewRouteImport } from './routes/admin/webinars/new'
 import { Route as AdminWebinarsIdRouteImport } from './routes/admin/webinars/$id'
 
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin/'
     | '/admin/webinars/$id'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin'
     | '/admin/webinars/$id'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin/'
     | '/admin/webinars/$id'
@@ -137,11 +149,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SetupRoute: typeof SetupRoute
   WebinarSlugRoute: typeof WebinarSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -230,8 +250,19 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  SetupRoute: SetupRoute,
   WebinarSlugRoute: WebinarSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

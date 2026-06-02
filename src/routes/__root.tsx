@@ -6,12 +6,15 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { themeInitScript } from "@/components/admin/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
+import { getSetupStatus } from "@/lib/api/setup.functions";
+import { hydrateEnvFromPersistedSettings } from "@/lib/setup/settings-store.server";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -25,10 +28,10 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            to="/"
+            to="/login"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Ir para login
           </Link>
         </div>
       </div>
@@ -39,9 +42,33 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const isConfigError =
+    /VITE_SUPABASE|SUPABASE_SERVICE_ROLE|OPENROUTER|obrigatóri/i.test(error.message ?? "");
+
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+
+  if (isConfigError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">Ambiente não configurado</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Preencha as chaves na tela de setup para continuar.
+          </p>
+          <div className="mt-6">
+            <a
+              href="/setup"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Ir para configuração
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -63,10 +90,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Try again
           </button>
           <a
-            href="/"
+            href="/admin"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Ir ao painel
           </a>
         </div>
       </div>
@@ -75,6 +102,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/setup") return;
+
+    await hydrateEnvFromPersistedSettings();
+
+    try {
+      const status = await getSetupStatus();
+      if (!status.ready) {
+        throw redirect({ to: "/setup" });
+      }
+    } catch (err) {
+      if (err && typeof err === "object" && "to" in err) throw err;
+      throw redirect({ to: "/setup" });
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -89,8 +131,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Webinar Platform" },
       { name: "twitter:description", content: "Plataforma de webinars ao vivo" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png" },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png",
+      },
     ],
     links: [
       {
@@ -131,7 +181,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
