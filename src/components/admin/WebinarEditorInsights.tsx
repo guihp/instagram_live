@@ -18,7 +18,7 @@ import {
 interface LeadRow {
   id: string;
   registered_at: string;
-  data: unknown;
+  data: import("@/lib/supabase/database.types").Json;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
