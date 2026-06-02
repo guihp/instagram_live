@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { Download, MessageCircle, Plus, Save, Sparkles, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { MessageCircle, Plus, Sparkles, Trash2 } from "lucide-react";
 
 import { EditorSection } from "@/components/admin/EditorSection";
 import { Badge } from "@/components/ui/badge";
@@ -10,50 +8,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/webinar/video-utils";
-import {
-  getWebinarChatMessagesForImport,
-  listWebinarsForChatImport,
-  saveChatSnapshot,
-} from "@/lib/api/admin.functions";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export interface ChatMessageDraft {
   author_name: string;
   message: string;
   appear_at_minutes: number;
   sort_order: number;
-  kind?: "question" | "comment" | "reaction" | "team_reply";
+  kind?: "question" | "comment" | "reaction";
 }
 
 interface ChatMessagesEditorProps {
-  webinarId?: string;
   messages: ChatMessageDraft[];
   onChange: (messages: ChatMessageDraft[]) => void;
   videoDurationSeconds?: number | null;
   onRegenerate?: () => void;
   regenerating?: boolean;
   canRegenerate?: boolean;
-  defaultGenerateCount?: number;
 }
 
 const KIND_LABELS: Record<NonNullable<ChatMessageDraft["kind"]>, string> = {
   question: "Pergunta",
   comment: "Comentário",
   reaction: "Reação",
-  team_reply: "Resposta da equipe",
 };
 
 const KIND_STYLES: Record<NonNullable<ChatMessageDraft["kind"]>, string> = {
   question: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
   comment: "bg-muted text-muted-foreground",
   reaction: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
-  team_reply: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
 };
 
 function getInitials(name: string): string {
@@ -68,17 +50,15 @@ function formatAppearTime(minutes: number): string {
   return formatDuration(totalSeconds);
 }
 
-function inferKind(message: ChatMessageDraft): NonNullable<ChatMessageDraft["kind"]> {
+function inferKind(message: ChatMessageDraft): ChatMessageDraft["kind"] {
   if (message.kind) return message.kind;
   const text = message.message.trim();
   if (text.endsWith("?")) return "question";
   if (/^(show|top|demais|massa|boa|incrivel|parabens|amei)/i.test(text)) return "reaction";
-  if (/equipe|suporte|moderador/i.test(message.author_name)) return "team_reply";
   return "comment";
 }
 
 export function ChatMessagesEditor({
-  webinarId,
   messages,
   onChange,
   videoDurationSeconds,
@@ -86,66 +66,6 @@ export function ChatMessagesEditor({
   regenerating = false,
   canRegenerate = false,
 }: ChatMessagesEditorProps) {
-  const [importSourceId, setImportSourceId] = useState<string>("");
-  const [importing, setImporting] = useState(false);
-  const [snapshotLabel, setSnapshotLabel] = useState("");
-  const [savingSnapshot, setSavingSnapshot] = useState(false);
-
-  const handleImportFromWebinar = async () => {
-    if (!importSourceId) return;
-    setImporting(true);
-    try {
-      const rows = (await getWebinarChatMessagesForImport({
-        data: { webinarId: importSourceId },
-      })) as Array<{
-        author_name: string;
-        message: string;
-        appear_at_seconds: number;
-        sort_order: number;
-        kind?: string;
-      }>;
-      onChange(
-        rows.map((m, i) => ({
-          author_name: m.author_name,
-          message: m.message,
-          appear_at_minutes: (m.appear_at_seconds ?? 0) / 60,
-          sort_order: m.sort_order ?? i,
-          kind: (m.kind as ChatMessageDraft["kind"]) ?? "comment",
-        })),
-      );
-      toast.success(`${rows.length} mensagens importadas. Salve o webinar para aplicar.`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao importar");
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const handleSaveSnapshot = async () => {
-    if (!webinarId || !snapshotLabel.trim()) return;
-    setSavingSnapshot(true);
-    try {
-      await saveChatSnapshot({
-        data: {
-          webinarId,
-          label: snapshotLabel.trim(),
-          messages: messages.map((m, i) => ({
-            author_name: m.author_name,
-            message: m.message,
-            appear_at_seconds: Math.round(m.appear_at_minutes * 60),
-            sort_order: m.sort_order ?? i,
-            kind: m.kind,
-          })),
-        },
-      });
-      toast.success("Snapshot do chat salvo neste webinar.");
-      setSnapshotLabel("");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar snapshot");
-    } finally {
-      setSavingSnapshot(false);
-    }
-  };
   const sorted = [...messages].sort(
     (a, b) => a.appear_at_minutes - b.appear_at_minutes || a.sort_order - b.sort_order,
   );
@@ -178,53 +98,6 @@ export function ChatMessagesEditor({
       title="Chat simulado ao vivo"
       description="Mensagens que aparecem no chat conforme o vídeo avança. A IA gera perguntas e comentários automaticamente ao processar a transcrição."
     >
-      {webinarId ? (
-        <div className="rounded-xl border border-dashed bg-muted/20 p-4 space-y-3">
-          <p className="text-sm font-medium">Reutilizar chat de outro webinar</p>
-          <p className="text-xs text-muted-foreground">
-            Importa mensagens já configuradas. Para a IA usar como base ao gerar de novo, escolha o webinar no
-            diálogo &quot;Gerar do vídeo&quot;.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <ImportWebinarSelect
-              excludeId={webinarId}
-              value={importSourceId}
-              onChange={setImportSourceId}
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="gap-2"
-              disabled={!importSourceId || importing}
-              onClick={() => void handleImportFromWebinar()}
-            >
-              <Download className="size-4" />
-              {importing ? "Importando..." : "Importar mensagens"}
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2 pt-1 border-t border-border/60">
-            <Input
-              className="max-w-xs h-9"
-              placeholder="Nome do snapshot (ex: Live março)"
-              value={snapshotLabel}
-              onChange={(e) => setSnapshotLabel(e.target.value)}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={!snapshotLabel.trim() || savingSnapshot || messages.length === 0}
-              onClick={() => void handleSaveSnapshot()}
-            >
-              <Save className="size-4" />
-              {savingSnapshot ? "Salvando..." : "Salvar snapshot"}
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{messages.length} mensagens</Badge>
@@ -254,7 +127,7 @@ export function ChatMessagesEditor({
       </div>
 
       {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/[0.08] bg-[#1A1C22]/40 px-6 py-12 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/20 px-6 py-12 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <MessageCircle className="size-6" />
           </div>
@@ -340,38 +213,5 @@ export function ChatMessagesEditor({
         </div>
       )}
     </EditorSection>
-  );
-}
-
-function ImportWebinarSelect({
-  excludeId,
-  value,
-  onChange,
-}: {
-  excludeId: string;
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  const [items, setItems] = useState<{ id: string; title: string }[]>([]);
-
-  useEffect(() => {
-    void listWebinarsForChatImport({ data: { excludeId } }).then((rows) =>
-      setItems(rows.map((r) => ({ id: r.id, title: r.title }))),
-    );
-  }, [excludeId]);
-
-  return (
-    <Select value={value || undefined} onValueChange={onChange}>
-      <SelectTrigger className="w-[min(100%,280px)]">
-        <SelectValue placeholder="Escolher webinar..." />
-      </SelectTrigger>
-      <SelectContent>
-        {items.map((w) => (
-          <SelectItem key={w.id} value={w.id}>
-            {w.title}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }

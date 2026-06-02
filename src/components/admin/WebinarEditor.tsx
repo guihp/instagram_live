@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ChatMessagesEditor, type ChatMessageDraft } from "@/components/admin/ChatMessagesEditor";
-import { ChatGenerateDialog, type ChatGenerateOptions } from "@/components/admin/ChatGenerateDialog";
-import { ChatModerationEditor } from "@/components/admin/ChatModerationEditor";
 import { TriggersEditor, type TriggerDraft } from "@/components/admin/TriggersEditor";
 import { EditorSection } from "@/components/admin/EditorSection";
 import { CopyWebinarLink } from "@/components/admin/CopyWebinarLink";
@@ -47,7 +45,6 @@ import {
   updateWebinar,
 } from "@/lib/api/admin.functions";
 import type {
-  Webinar,
   DisplayMode,
   FieldType,
   PhoneRegion,
@@ -100,15 +97,6 @@ export interface WebinarFormData {
   formFields: FormField[];
   chatMessages: ChatMessage[];
   triggers: Trigger[];
-  post_live_hold_minutes: number;
-  post_live_title: string;
-  post_live_description: string;
-  viewer_count_start: number | null;
-  viewer_count_mid: number | null;
-  viewer_count_end: number | null;
-  chat_generate_count: number;
-  chat_participant_enabled: boolean;
-  chat_blocked_words: string[];
 }
 
 interface WebinarInsightsData {
@@ -130,8 +118,6 @@ interface WebinarInsightsData {
 
 interface WebinarEditorProps {
   webinarId?: string;
-  /** Webinar salvo no banco — base do preview da landing */
-  sourceWebinar?: Webinar;
   initial?: Partial<WebinarFormData> & {
     schedule_recurrence?: ScheduleRecurrence;
     schedule_weekday?: number | null;
@@ -166,21 +152,10 @@ const defaultForm: WebinarFormData = {
   ],
   chatMessages: [],
   triggers: [],
-  post_live_hold_minutes: 60,
-  post_live_title: "Webinar encerrado",
-  post_live_description:
-    "Obrigado por acompanhar ao vivo. O replay fica disponível por tempo limitado — garanta sua vaga pelo botão abaixo.",
-  viewer_count_start: 840,
-  viewer_count_mid: 1120,
-  viewer_count_end: 980,
-  chat_generate_count: 20,
-  chat_participant_enabled: true,
-  chat_blocked_words: [],
 };
 
 export function WebinarEditor({
   webinarId,
-  sourceWebinar,
   initial,
   transcriptionStatus,
   hideShareLink = false,
@@ -210,7 +185,6 @@ export function WebinarEditor({
   const [converting, setConverting] = useState(false);
   const [uploadPercent, setUploadPercent] = useState(0);
   const [transcribing, setTranscribing] = useState(false);
-  const [chatGenerateOpen, setChatGenerateOpen] = useState(false);
   const [transcriptionState, setTranscriptionState] = useState(transcriptionStatus ?? "pending");
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(() => {
     if (initial?.video_url) {
@@ -233,72 +207,6 @@ export function WebinarEditor({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const landingPreviewMeta = useMemo(() => {
-    const sched = scheduleFormToPayload(schedule);
-    return {
-      title: form.title,
-      description: form.description,
-      waiting_title: form.waiting_title,
-      waiting_description: form.waiting_description,
-      slug: form.slug,
-      scheduled_at: sched.scheduled_at,
-      schedule_recurrence: sched.schedule_recurrence,
-      schedule_weekday: sched.schedule_weekday,
-      group_link: form.group_link,
-    };
-  }, [form, schedule]);
-
-  const landingPreviewBase = useMemo((): Webinar | undefined => {
-    if (sourceWebinar) return sourceWebinar;
-    if (!form.title.trim() && !form.slug.trim()) return undefined;
-    const sched = scheduleFormToPayload(schedule);
-    return {
-      id: webinarId ?? "00000000-0000-0000-0000-000000000001",
-      slug: form.slug || "preview",
-      title: form.title || "Webinar",
-      description: form.description || null,
-      scheduled_at: sched.scheduled_at,
-      schedule_recurrence: sched.schedule_recurrence,
-      schedule_weekday: sched.schedule_weekday,
-      status: form.status,
-      video_type: form.video_type,
-      video_url: form.video_url || null,
-      video_duration_seconds: form.video_duration_seconds,
-      group_link: form.group_link || null,
-      display_mode: form.display_mode,
-      waiting_title: form.waiting_title || null,
-      waiting_description: form.waiting_description || null,
-      ai_context: form.ai_context || null,
-      ai_assistant_name: form.ai_assistant_name || null,
-      landing_template: landing.landing_template,
-      landing_theme: landing.landing_theme,
-      landing_stats: landing.landing_stats,
-      landing_logo_url: landing.landing_logo_url || null,
-      landing_hero_image: landing.landing_hero_image || null,
-      landing_promo_video_url: landing.landing_promo_video_url || null,
-      landing_benefits: landing.landing_benefits,
-      landing_topics: landing.landing_topics,
-      landing_audience: landing.landing_audience,
-      host_name: landing.host_name || null,
-      host_title: landing.host_title || null,
-      host_bio: landing.host_bio || null,
-      host_image_url: landing.host_image_url || null,
-      landing_cta_text: landing.landing_cta_text || null,
-      landing_footer: landing.landing_footer,
-      post_live_hold_minutes: form.post_live_hold_minutes,
-      post_live_title: form.post_live_title || null,
-      post_live_description: form.post_live_description || null,
-      viewer_count_start: form.viewer_count_start,
-      viewer_count_mid: form.viewer_count_mid,
-      viewer_count_end: form.viewer_count_end,
-      chat_generate_count: form.chat_generate_count,
-      chat_participant_enabled: form.chat_participant_enabled,
-      chat_blocked_words: form.chat_blocked_words,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-  }, [sourceWebinar, form, schedule, landing, webinarId]);
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -320,15 +228,6 @@ export function WebinarEditor({
         waiting_description: form.waiting_description || undefined,
         ai_context: form.ai_context || undefined,
         ai_assistant_name: form.ai_assistant_name.trim() || undefined,
-        post_live_hold_minutes: form.post_live_hold_minutes,
-        post_live_title: form.post_live_title.trim() || null,
-        post_live_description: form.post_live_description.trim() || null,
-        viewer_count_start: form.viewer_count_start,
-        viewer_count_mid: form.viewer_count_mid,
-        viewer_count_end: form.viewer_count_end,
-        chat_generate_count: form.chat_generate_count,
-        chat_participant_enabled: form.chat_participant_enabled,
-        chat_blocked_words: form.chat_blocked_words,
       };
 
       const formFieldsPayload = form.formFields.map(({ isDefault: _, ...f }) => f);
@@ -337,7 +236,6 @@ export function WebinarEditor({
         message: m.message,
         appear_at_seconds: minutesToSeconds(m.appear_at_minutes),
         sort_order: m.sort_order,
-        kind: m.kind ?? "comment",
       }));
       const triggersPayload = form.triggers.map((t) => ({
         trigger_type: t.trigger_type,
@@ -465,7 +363,28 @@ export function WebinarEditor({
 
       toast.success(`Vídeo enviado! Duração detectada: ${formatDuration(result.durationSeconds)}`);
 
-      setChatGenerateOpen(true);
+      setTranscriptionState("processing");
+      setTranscribing(true);
+      toast.info("Extraindo conteúdo do vídeo com IA... Isso pode levar alguns minutos.");
+
+      try {
+        const transcriptionResult = await requestTranscription({ data: { webinarId } });
+        setTranscriptionState("completed");
+        if (transcriptionResult.aiContext) {
+          update("ai_context", transcriptionResult.aiContext);
+        }
+        if (transcriptionResult.chatMessages?.length) {
+          update("chatMessages", transcriptionResult.chatMessages);
+        }
+        toast.success(
+          `Conteúdo extraído! ${transcriptionResult.triggersCount} gatilho(s) e ${transcriptionResult.chatMessagesCount} mensagem(ns) de chat.`,
+        );
+      } catch (err) {
+        setTranscriptionState("failed");
+        toast.error(err instanceof Error ? err.message : "Erro na transcrição");
+      } finally {
+        setTranscribing(false);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro no upload");
     } finally {
@@ -475,39 +394,26 @@ export function WebinarEditor({
     }
   };
 
-  const runTranscriptionWithOptions = async (options: ChatGenerateOptions) => {
+  const handleRetranscribe = async () => {
     if (!webinarId) return;
-    update("chat_generate_count", options.messageCount);
     setTranscribing(true);
     setTranscriptionState("processing");
     try {
-      const result = await requestTranscription({
-        data: {
-          webinarId,
-          messageCount: options.messageCount,
-          referenceWebinarId: options.referenceWebinarId,
-        },
-      });
+      const result = await requestTranscription({ data: { webinarId } });
       setTranscriptionState("completed");
       if (result.aiContext) update("ai_context", result.aiContext);
       if (result.chatMessages?.length) {
         update("chatMessages", result.chatMessages);
       }
       toast.success(
-        `Conteúdo gerado! ${result.chatMessagesCount} mensagem(ns) no chat (perguntas + respostas da equipe).`,
+        `Conteúdo reprocessado! ${result.chatMessagesCount} mensagem(ns) de chat geradas.`,
       );
     } catch (err) {
       setTranscriptionState("failed");
       toast.error(err instanceof Error ? err.message : "Erro na transcrição");
     } finally {
       setTranscribing(false);
-      setChatGenerateOpen(false);
     }
-  };
-
-  const handleRetranscribe = () => {
-    if (!webinarId) return;
-    setChatGenerateOpen(true);
   };
 
   const addFormField = () => {
@@ -539,9 +445,7 @@ export function WebinarEditor({
         <CardHeader className="border-b bg-muted/30 pb-0">
           <div className="space-y-1 pb-4">
             <CardTitle className="text-lg">Configuração</CardTitle>
-            <CardDescription>
-              Ajuste conteúdo, agendamento, formulário, vídeo e interações da live.
-            </CardDescription>
+            <CardDescription>Ajuste conteúdo, agendamento, formulário, vídeo e interações da live.</CardDescription>
           </div>
           <TabsList className="mb-0 grid h-auto w-full grid-cols-2 gap-1 bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="geral" className="data-[state=active]:bg-background">
@@ -663,13 +567,7 @@ export function WebinarEditor({
           </TabsContent>
 
         <TabsContent value="landing" className="mt-0 space-y-4">
-          <LandingPageEditor
-            values={landing}
-            onChange={setLanding}
-            webinarId={webinarId}
-            previewBaseWebinar={landingPreviewBase}
-            previewMeta={landingPreviewMeta}
-          />
+          <LandingPageEditor values={landing} onChange={setLanding} webinarId={webinarId} />
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-0 space-y-4">
@@ -904,91 +802,13 @@ export function WebinarEditor({
         </TabsContent>
 
         <TabsContent value="chat" className="mt-0 space-y-5">
-          <EditorSection
-            title="Pós-live e público simulado"
-            description="Tela após o fim do vídeo e contador de pessoas assistindo no player."
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
-                <Label>Manter tela final (minutos)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={180}
-                  value={form.post_live_hold_minutes}
-                  onChange={(e) =>
-                    update("post_live_hold_minutes", Math.max(0, Number(e.target.value) || 60))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Público no início</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.viewer_count_start ?? ""}
-                  onChange={(e) =>
-                    update("viewer_count_start", e.target.value ? Number(e.target.value) : null)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Público no meio</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.viewer_count_mid ?? ""}
-                  onChange={(e) =>
-                    update("viewer_count_mid", e.target.value ? Number(e.target.value) : null)
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Público no fim</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.viewer_count_end ?? ""}
-                  onChange={(e) =>
-                    update("viewer_count_end", e.target.value ? Number(e.target.value) : null)
-                  }
-                />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Título da tela final</Label>
-                <Input
-                  value={form.post_live_title}
-                  onChange={(e) => update("post_live_title", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Texto explicativo</Label>
-                <Textarea
-                  rows={2}
-                  value={form.post_live_description}
-                  onChange={(e) => update("post_live_description", e.target.value)}
-                />
-              </div>
-            </div>
-          </EditorSection>
-
-          <ChatModerationEditor
-            participantEnabled={form.chat_participant_enabled}
-            blockedWords={form.chat_blocked_words}
-            onParticipantEnabledChange={(v) => update("chat_participant_enabled", v)}
-            onBlockedWordsChange={(words) => update("chat_blocked_words", words)}
-          />
-
           <ChatMessagesEditor
-            webinarId={webinarId}
             messages={form.chatMessages}
             onChange={(messages) => update("chatMessages", messages)}
             videoDurationSeconds={form.video_duration_seconds}
             canRegenerate={Boolean(webinarId && form.video_url)}
             regenerating={transcribing}
-            onRegenerate={handleRetranscribe}
+            onRegenerate={() => void handleRetranscribe()}
           />
         </TabsContent>
 
@@ -1001,21 +821,12 @@ export function WebinarEditor({
         </TabsContent>
         </div>
 
-        <div className="sticky bottom-0 flex justify-end gap-2 border-t bg-muted/30 px-6 py-4">
+        <div className="sticky bottom-0 flex justify-end gap-2 border-t bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <Button onClick={handleSave} disabled={saving || !form.title || !form.slug}>
             {saving ? "Salvando..." : webinarId ? "Salvar alterações" : "Criar webinar"}
           </Button>
         </div>
       </Tabs>
-
-      <ChatGenerateDialog
-        open={chatGenerateOpen}
-        onOpenChange={setChatGenerateOpen}
-        defaultCount={form.chat_generate_count}
-        currentWebinarId={webinarId}
-        loading={transcribing}
-        onConfirm={(opts) => void runTranscriptionWithOptions(opts)}
-      />
     </Card>
   );
 }

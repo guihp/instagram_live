@@ -4,7 +4,6 @@ import { z } from "zod";
 import { createServiceClient } from "../supabase/server";
 import { resolveAiAssistantName } from "../webinar/assistant-name";
 import { getBrasiliaDateKey } from "../webinar/datetime";
-import { messageHasBlockedWord, parseBlockedWords } from "../webinar/chat-moderation";
 
 async function resolveLeadIdForWebinar(
   webinarId: string,
@@ -109,29 +108,11 @@ export const sendLiveMessage = createServerFn({ method: "POST" })
       leadId: z.string().uuid().optional(),
       authorName: z.string().min(1),
       message: z.string().min(1).max(500),
-      currentVideoTime: z.number().min(0).optional(),
     }),
   )
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
     const leadId = await resolveLeadIdForWebinar(data.webinarId, data.leadId);
-
-    const { data: webinar } = await supabase
-      .from("webinars")
-      .select("chat_participant_enabled, chat_blocked_words, ai_context, ai_assistant_name, host_name")
-      .eq("id", data.webinarId)
-      .single();
-
-    if (webinar && webinar.chat_participant_enabled === false) {
-      return { rejected: "chat_locked" as const, userMessage: null, aiMessage: null };
-    }
-
-    const blockedWords = parseBlockedWords(webinar?.chat_blocked_words);
-    if (messageHasBlockedWord(data.message, blockedWords)) {
-      return { rejected: "blocked_word" as const, userMessage: null, aiMessage: null };
-    }
-
-    const sessionDate = getBrasiliaDateKey();
 
     const { data: msg, error } = await supabase
       .from("webinar_live_messages")
@@ -141,7 +122,6 @@ export const sendLiveMessage = createServerFn({ method: "POST" })
         author_name: data.authorName,
         message: data.message,
         is_ai_response: false,
-        session_date: sessionDate,
       })
       .select("*")
       .single();
@@ -159,11 +139,18 @@ export const sendLiveMessage = createServerFn({ method: "POST" })
     let aiMsg = null;
 
     try {
-      const { data: transcription } = await supabase
-        .from("webinar_transcriptions")
-        .select("full_text")
-        .eq("webinar_id", data.webinarId)
-        .maybeSingle();
+      const [{ data: webinar }, { data: transcription }] = await Promise.all([
+        supabase
+          .from("webinars")
+          .select("ai_context, ai_assistant_name, host_name")
+          .eq("id", data.webinarId)
+          .single(),
+        supabase
+          .from("webinar_transcriptions")
+          .select("full_text")
+          .eq("webinar_id", data.webinarId)
+          .maybeSingle(),
+      ]);
 
       const assistantName = resolveAiAssistantName(
         webinar?.ai_assistant_name,
@@ -193,7 +180,6 @@ export const sendLiveMessage = createServerFn({ method: "POST" })
           author_name: assistantName,
           message: aiReply,
           is_ai_response: true,
-          session_date: sessionDate,
         })
         .select("*")
         .single();
@@ -209,21 +195,14 @@ export const sendLiveMessage = createServerFn({ method: "POST" })
   });
 
 export const getLiveMessages = createServerFn({ method: "GET" })
-  .inputValidator(
-    z.object({
-      webinarId: z.string().uuid(),
-      sessionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    }),
-  )
+  .inputValidator(z.object({ webinarId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
-    const sessionDate = data.sessionDate ?? getBrasiliaDateKey();
 
     const { data: messages, error } = await supabase
       .from("webinar_live_messages")
       .select("*")
       .eq("webinar_id", data.webinarId)
-      .eq("session_date", sessionDate)
       .order("created_at");
 
     if (error) {

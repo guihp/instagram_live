@@ -1,4 +1,8 @@
-import { getSessionState, type ScheduleConfig } from "./schedule";
+import {
+  getSessionState,
+  getSyncedSessionStart,
+  type ScheduleConfig,
+} from "./schedule";
 
 export type { ScheduleConfig, ScheduleRecurrence, SessionState } from "./schedule";
 export {
@@ -14,18 +18,25 @@ export {
 
 /**
  * Calcula a posição de reprodução do vídeo com base no horário da sessão ativa.
- * Não limita pela duração — o player usa a duração real do arquivo para isso.
  */
 export function getSyncedPlaybackPosition(
   config: ScheduleConfig,
-  _durationSeconds: number | null,
+  durationSeconds: number | null,
   now = new Date(),
 ): number {
-  const { sessionStart, isLive } = getSessionState(config, now);
-  if (!isLive || !sessionStart) return 0;
+  const sessionStart = getSyncedSessionStart(config, now);
+  const startMs = sessionStart.getTime();
+  const nowMs = now.getTime();
 
-  const elapsedSeconds = (now.getTime() - sessionStart.getTime()) / 1000;
-  return Math.max(0, elapsedSeconds);
+  if (nowMs < startMs) return 0;
+
+  const elapsedSeconds = (nowMs - startMs) / 1000;
+
+  if (durationSeconds && durationSeconds > 0) {
+    return Math.min(elapsedSeconds, durationSeconds);
+  }
+
+  return elapsedSeconds;
 }
 
 /** @deprecated Use getSyncedPlaybackPosition com ScheduleConfig */

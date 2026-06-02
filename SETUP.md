@@ -35,8 +35,6 @@ O schema está em `supabase/migrations/`. Rode **todos** os arquivos, **na ordem
 | `20260530140000_landing_footer.sql` | Coluna `landing_footer` |
 | `20260530150000_trigger_appear_mode.sql` | Modo de aparição dos gatilhos |
 | `20260530160000_webinar_live_messages.sql` | Chat ao vivo |
-| `20260601100000_webinar_live_enhancements.sql` | Sessão do chat, pós-live, público simulado |
-| `20260601110000_chat_moderation.sql` | Bloquear chat e palavras proibidas |
 | `20260530170000_ai_assistant_name.sql` | Nome do assistente IA |
 
 ### Opção A — SQL Editor (mais simples)

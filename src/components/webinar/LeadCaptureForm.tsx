@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -17,7 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/webinar/PhoneInput";
 import type { PhoneRegion, WebinarFormField } from "@/lib/supabase/database.types";
 import { phoneValidationMessage, validatePhone } from "@/lib/webinar/phone";
-import { cn } from "@/lib/utils";
 
 interface LeadCaptureFormProps {
   fields: WebinarFormField[];
@@ -27,8 +25,6 @@ interface LeadCaptureFormProps {
   description?: string;
   /** Sem card externo — para embed na landing page */
   embedded?: boolean;
-  variant?: "default" | "popup";
-  submitLabel?: string;
 }
 
 export function LeadCaptureForm({
@@ -38,8 +34,6 @@ export function LeadCaptureForm({
   title = "Inscreva-se para assistir",
   description = "Preencha seus dados para acessar o webinar.",
   embedded = false,
-  variant = "default",
-  submitLabel = "Continuar",
 }: LeadCaptureFormProps) {
   const schemaShape: Record<string, z.ZodTypeAny> = {};
   fields.forEach((field) => {
@@ -87,7 +81,7 @@ export function LeadCaptureForm({
 
   const formContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className={cn("space-y-4", variant === "popup" && "space-y-5")}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {fields.map((field) => (
           <FormField
             key={field.id}
@@ -95,16 +89,10 @@ export function LeadCaptureForm({
             name={field.field_key as keyof FormValues}
             render={({ field: formField }) => (
               <FormItem>
-                <FormLabel className={cn(variant === "popup" && "text-sm font-semibold")}>
-                  {field.label}
-                </FormLabel>
+                <FormLabel>{field.label}</FormLabel>
                 <FormControl>
                   {field.field_type === "textarea" ? (
-                    <Textarea
-                      {...formField}
-                      value={formField.value ?? ""}
-                      className={cn(variant === "popup" && "min-h-[100px] rounded-xl")}
-                    />
+                    <Textarea {...formField} value={formField.value ?? ""} />
                   ) : field.field_type === "tel" ? (
                     <PhoneInput
                       region={(field.phone_region ?? "BR") as PhoneRegion}
@@ -113,14 +101,12 @@ export function LeadCaptureForm({
                       onBlur={formField.onBlur}
                       name={formField.name}
                       ref={formField.ref}
-                      className={cn(variant === "popup" && "h-12 rounded-xl text-base")}
                     />
                   ) : (
                     <Input
                       {...formField}
                       type={field.field_type === "email" ? "email" : "text"}
                       value={formField.value ?? ""}
-                      className={cn(variant === "popup" && "h-12 rounded-xl text-base")}
                     />
                   )}
                 </FormControl>
@@ -129,18 +115,8 @@ export function LeadCaptureForm({
             )}
           />
         ))}
-        <Button
-          type="submit"
-          className={cn(
-            "w-full",
-            variant === "popup" &&
-              "h-12 gap-2 rounded-xl bg-webinar-accent text-base font-bold shadow-[0_8px_24px_-8px_oklch(0.62_0.19_250/0.55)] hover:bg-webinar-accent/90",
-          )}
-          size="lg"
-          disabled={loading}
-        >
-          {loading ? "Enviando..." : submitLabel}
-          {variant === "popup" && !loading && <ArrowRight className="size-4" />}
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading ? "Enviando..." : "Continuar"}
         </Button>
       </form>
     </Form>

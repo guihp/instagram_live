@@ -110,22 +110,7 @@ export async function transcribeAudioChunk(
   throw new Error(`Transcrição de áudio falhou (${format}). ${lastError}`);
 }
 
-export interface AnalyzeTranscriptOptions {
-  messageCount?: number;
-  assistantName?: string;
-  referenceMessages?: Array<{
-    author_name: string;
-    message: string;
-    appear_at_seconds: number;
-    kind?: string;
-  }>;
-}
-
-export async function analyzeTranscript(
-  fullText: string,
-  segments: TranscriptionSegment[],
-  options: AnalyzeTranscriptOptions = {},
-): Promise<{
+export async function analyzeTranscript(fullText: string, segments: TranscriptionSegment[]): Promise<{
   summary: string;
   aiContext: string;
   triggers: DetectedTrigger[];
@@ -135,13 +120,6 @@ export async function analyzeTranscript(
     .slice(0, 200)
     .map((s) => `[${formatTimestamp(s.start)}] ${s.text}`)
     .join("\n");
-
-  const targetCount = Math.min(50, Math.max(8, options.messageCount ?? 20));
-  const teamName = options.assistantName?.trim() || "Equipe";
-  const referenceBlock =
-    options.referenceMessages && options.referenceMessages.length > 0
-      ? `\nMENSAGENS DE REFERÊNCIA (use como inspiração de tom e temas, adapte ao conteúdo atual):\n${JSON.stringify(options.referenceMessages.slice(0, 40), null, 0).slice(0, 6000)}`
-      : "";
 
   const result = await openRouterFetch<{ choices: Array<{ message: { content: string } }> }>(
     "/chat/completions",
@@ -173,22 +151,15 @@ Retorne JSON válido com:
       "author_name": "Nome brasileiro plausível",
       "message": "Pergunta ou comentário natural sobre o que acabou de ser dito na aula",
       "appear_at_seconds": 90,
-      "kind": "question" | "comment" | "reaction",
-      "team_reply": {
-        "message": "Resposta curta da equipe (só quando kind for question)",
-        "delay_seconds": 20
-      }
+      "kind": "question" | "comment" | "reaction"
     }
   ]
 }
 
-Para chat_messages: gere exatamente ${targetCount} mensagens simuladas distribuídas ao longo do vídeo (do início ao fim).
+Para chat_messages: gere 15 a 25 mensagens simuladas distribuídas ao longo do vídeo (do início ao fim).
 Misture perguntas sobre o conteúdo, comentários de apoio e reações. Timestamps devem coincidir com tópicos da transcrição.
-Nomes variados (Ana, Carlos, Fernanda, João, Mariana, etc.). Tom informal de chat ao vivo em português do Brasil — como pessoa real digitando no celular.
-Em cerca de 25% das mensagens de participantes, use pequenos erros de português (voce, pq, obg, falta de acento, "kkk" ocasional). Não exagere.
-Para cada kind "question", inclua team_reply com resposta curta e humanizada em nome de "${teamName}" (delay_seconds entre 15 e 90).
+Nomes variados (Ana, Carlos, Fernanda, João, Mariana, etc.). Tom informal de chat ao vivo em português do Brasil.
 NÃO inclua mensagens sobre inscrição, acesso ou horário do evento.
-${referenceBlock}
 
 Para triggers tipo cart use appear_mode "before_end" e appear_at_seconds como segundos antes do fim do vídeo.
 
@@ -218,7 +189,6 @@ ${AI_CONTEXT_XML_INSTRUCTIONS}`,
       message: string;
       appear_at_seconds: number;
       kind?: string;
-      team_reply?: { message: string; delay_seconds?: number };
     }>;
   };
 
@@ -242,65 +212,16 @@ ${AI_CONTEXT_XML_INSTRUCTIONS}`,
         transcriptSnippet: t.transcript_snippet ?? "",
       };
     }),
-    chatMessages: flattenChatMessagesWithReplies(parsed.chat_messages ?? [], teamName),
+    chatMessages: (parsed.chat_messages ?? [])
+      .filter((m) => m.message?.trim() && m.author_name?.trim())
+      .map((m, index) => ({
+        authorName: m.author_name.trim(),
+        message: m.message.trim(),
+        appearAtSeconds: Math.max(0, Math.round(m.appear_at_seconds ?? 0)),
+        kind: m.kind === "question" || m.kind === "reaction" ? m.kind : "comment",
+        sortOrder: index,
+      })),
   };
-}
-
-function flattenChatMessagesWithReplies(
-  raw: Array<{
-    author_name: string;
-    message: string;
-    appear_at_seconds: number;
-    kind?: string;
-    team_reply?: { message: string; delay_seconds?: number };
-  }>,
-  teamName: string,
-): Array<{
-  authorName: string;
-  message: string;
-  appearAtSeconds: number;
-  kind: "question" | "comment" | "reaction" | "team_reply";
-  sortOrder: number;
-}> {
-  const out: Array<{
-    authorName: string;
-    message: string;
-    appearAtSeconds: number;
-    kind: "question" | "comment" | "reaction" | "team_reply";
-    sortOrder: number;
-  }> = [];
-
-  let order = 0;
-  for (const m of raw) {
-    if (!m.message?.trim() || !m.author_name?.trim()) continue;
-    const kind =
-      m.kind === "question" || m.kind === "reaction"
-        ? m.kind
-        : m.kind === "team_reply"
-          ? "team_reply"
-          : "comment";
-
-    out.push({
-      authorName: m.author_name.trim(),
-      message: m.message.trim(),
-      appearAtSeconds: Math.max(0, Math.round(m.appear_at_seconds ?? 0)),
-      kind,
-      sortOrder: order++,
-    });
-
-    if (kind === "question" && m.team_reply?.message?.trim()) {
-      const delay = Math.min(120, Math.max(10, Math.round(m.team_reply.delay_seconds ?? 25)));
-      out.push({
-        authorName: teamName,
-        message: m.team_reply.message.trim(),
-        appearAtSeconds: Math.max(0, Math.round(m.appear_at_seconds ?? 0)) + delay,
-        kind: "team_reply",
-        sortOrder: order++,
-      });
-    }
-  }
-
-  return out.sort((a, b) => a.appearAtSeconds - b.appearAtSeconds || a.sortOrder - b.sortOrder);
 }
 
 function formatTimestamp(seconds: number): string {

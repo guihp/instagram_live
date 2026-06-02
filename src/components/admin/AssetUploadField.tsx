@@ -8,8 +8,8 @@ import { uploadWebinarAsset } from "@/lib/api/admin.functions";
 import { fileToBase64 } from "@/lib/file-utils";
 import { getAssetPublicUrl, getPromoVideoUrl } from "@/lib/webinar/landing";
 
-export type AssetUploadType = "hero" | "promo" | "host" | "logo";
-export type AssetPreviewLayout = "banner" | "avatar" | "logo";
+export type AssetUploadType = "hero" | "promo" | "host";
+export type AssetPreviewLayout = "banner" | "avatar";
 
 interface AssetUploadFieldProps {
   label: string;
@@ -77,24 +77,7 @@ export function AssetUploadField({
 
       {previewUrl && (
         <>
-          {previewType === "image" && previewLayout === "logo" ? (
-            <div className="relative flex items-center rounded-lg border bg-[#0A0C12] px-4 py-3">
-              <img
-                src={previewUrl}
-                alt={label}
-                className="h-8 max-w-[200px] object-contain object-left"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute right-2 top-2 size-8"
-                onClick={() => onChange("")}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ) : previewType === "image" && previewLayout === "avatar" ? (
+          {previewType === "image" && previewLayout === "avatar" ? (
             <div className="flex flex-col gap-3 rounded-xl border bg-muted/20 p-4 sm:flex-row sm:items-center sm:gap-5">
               <div className="relative mx-auto shrink-0 sm:mx-0">
                 <div className="size-28 overflow-hidden rounded-full ring-2 ring-primary/25 shadow-sm sm:size-32">

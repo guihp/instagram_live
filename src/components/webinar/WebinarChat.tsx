@@ -1,5 +1,5 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type CSSProperties } from "react";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getLiveMessages, sendLiveMessage } from "@/lib/api/webinar.functions";
 import type { WebinarChatMessage } from "@/lib/supabase/database.types";
-import { getBrasiliaDateKey } from "@/lib/webinar/datetime";
-import { messageHasBlockedWord } from "@/lib/webinar/chat-moderation";
 
 interface ChatMessage {
   id: string;
@@ -16,7 +14,6 @@ interface ChatMessage {
   message: string;
   isScripted?: boolean;
   isAi?: boolean;
-  isTeamReply?: boolean;
   pending?: boolean;
 }
 
@@ -27,51 +24,23 @@ interface WebinarChatProps {
   leadId?: string;
   authorName: string;
   assistantName?: string;
-  sessionDate?: string;
-  participantEnabled?: boolean;
-  blockedWords?: string[];
   className?: string;
-  style?: CSSProperties;
 }
 
-export interface WebinarChatHandle {
-  focusInput: () => void;
-  scrollIntoView: () => void;
-}
-
-export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(function WebinarChat(
-  {
-    webinarId,
-    scriptedMessages,
-    currentVideoTime,
-    leadId,
-    authorName,
-    assistantName = "Equipe",
-    sessionDate,
-    participantEnabled = true,
-    blockedWords = [],
-    className,
-    style,
-  },
-  ref,
-) {
-  const sessionKey = sessionDate ?? getBrasiliaDateKey();
+export function WebinarChat({
+  webinarId,
+  scriptedMessages,
+  currentVideoTime,
+  leadId,
+  authorName,
+  assistantName = "Equipe",
+  className,
+}: WebinarChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const messagesViewportRef = useRef<HTMLDivElement>(null);
   const injectedScriptedRef = useRef<Set<string>>(new Set());
-
-  useImperativeHandle(ref, () => ({
-    focusInput: () => {
-      inputRef.current?.focus();
-    },
-    scrollIntoView: () => {
-      rootRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    },
-  }));
 
   const sortedScripted = useMemo(
     () =>
@@ -88,10 +57,10 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
   useEffect(() => {
     injectedScriptedRef.current = new Set();
     setMessages((prev) => prev.filter((m) => !m.isScripted));
-  }, [scriptedMessages, sessionKey]);
+  }, [scriptedMessages]);
 
   useEffect(() => {
-    void getLiveMessages({ data: { webinarId, sessionDate: sessionKey } })
+    void getLiveMessages({ data: { webinarId } })
       .then((live) => {
         setMessages((prev) => {
           const scripted = prev.filter((m) => m.isScripted);
@@ -107,7 +76,7 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
       .catch(() => {
         /* mensagens simuladas continuam visíveis */
       });
-  }, [webinarId, sessionKey]);
+  }, [webinarId]);
 
   useEffect(() => {
     const additions: ChatMessage[] = [];
@@ -116,14 +85,11 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
       const appearAt = Number(msg.appear_at_seconds ?? 0);
       if (appearAt <= currentVideoTime && !injectedScriptedRef.current.has(msg.id)) {
         injectedScriptedRef.current.add(msg.id);
-        const kind = (msg as WebinarChatMessage & { kind?: string }).kind;
         additions.push({
           id: msg.id,
           author_name: msg.author_name,
           message: msg.message,
           isScripted: true,
-          isTeamReply: kind === "team_reply",
-          isAi: kind === "team_reply",
         });
       }
     }
@@ -141,13 +107,7 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
 
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || sending || !participantEnabled) return;
-
-    if (messageHasBlockedWord(text, blockedWords)) {
-      setInput("");
-      toast.error("Sua mensagem não foi publicada.");
-      return;
-    }
+    if (!text || sending) return;
 
     const optimisticId = `pending-${Date.now()}`;
     setInput("");
@@ -170,21 +130,8 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
           leadId,
           authorName,
           message: text,
-          currentVideoTime,
         },
       });
-
-      if (result.rejected === "chat_locked") {
-        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-        toast.info("O chat está fechado no momento.");
-        return;
-      }
-
-      if (result.rejected === "blocked_word" || !result.userMessage) {
-        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-        toast.error("Sua mensagem não foi publicada.");
-        return;
-      }
 
       setMessages((prev) => {
         const withoutPending = prev.filter((m) => m.id !== optimisticId);
@@ -216,12 +163,10 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
     }
   };
 
-  const canSend = participantEnabled && input.trim().length > 0 && !sending;
+  const canSend = input.trim().length > 0 && !sending;
 
   return (
     <div
-      ref={rootRef}
-      style={style}
       className={cn(
         "flex h-full max-h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-background shadow-sm",
         className,
@@ -229,24 +174,13 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
     >
       <div className="shrink-0 border-b bg-muted/30 px-4 py-3.5">
         <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
+          <div>
             <h3 className="text-sm font-bold tracking-tight">Chat ao vivo</h3>
             <p className="text-xs text-muted-foreground">
-              {messages.length} mensagem{messages.length === 1 ? "" : "s"} · respostas com{" "}
-              {assistantName}
+              {messages.length} mensagem{messages.length === 1 ? "" : "s"}
             </p>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            className="shrink-0 gap-1.5 bg-webinar-accent-soft text-webinar-accent hover:bg-webinar-accent-soft/80 lg:hidden"
-            onClick={() => inputRef.current?.focus()}
-          >
-            <MessageCircle className="size-3.5" />
-            {assistantName}
-          </Button>
-          <span className="hidden rounded-full bg-webinar-accent-soft px-2.5 py-1 text-[11px] font-semibold text-webinar-accent lg:inline-flex">
+          <span className="rounded-full bg-webinar-accent-soft px-2.5 py-1 text-[11px] font-semibold text-webinar-accent">
             {assistantName}
           </span>
         </div>
@@ -262,12 +196,11 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
               <span
                 className={cn(
                   "font-semibold",
-                  (msg.isAi || msg.isTeamReply) && "text-webinar-accent",
-                  msg.isScripted && !msg.isTeamReply && "text-muted-foreground",
+                  msg.isAi && "text-webinar-accent",
+                  msg.isScripted && "text-muted-foreground",
                 )}
               >
                 {msg.author_name}
-                {msg.isTeamReply ? " · equipe" : ""}
                 {msg.pending ? " · enviando…" : ""}
               </span>
               <p className="mt-0.5 text-foreground/90">{msg.message}</p>
@@ -275,12 +208,6 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
           ))}
         </div>
       </div>
-
-      {!participantEnabled ? (
-        <p className="shrink-0 border-t bg-muted/40 px-4 py-3 text-center text-xs text-muted-foreground">
-          Chat fechado para mensagens dos participantes.
-        </p>
-      ) : null}
 
       <form
         className="flex shrink-0 gap-2 border-t bg-background p-3"
@@ -290,15 +217,10 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
         }}
       >
         <Input
-          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            participantEnabled
-              ? `Pergunte ao ${assistantName}...`
-              : "Chat fechado"
-          }
-          disabled={sending || !participantEnabled}
+          placeholder="Digite sua pergunta..."
+          disabled={sending}
           maxLength={500}
           autoComplete="off"
         />
@@ -308,4 +230,4 @@ export const WebinarChat = forwardRef<WebinarChatHandle, WebinarChatProps>(funct
       </form>
     </div>
   );
-});
+}

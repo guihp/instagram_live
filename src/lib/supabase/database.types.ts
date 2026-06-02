@@ -6,17 +6,8 @@ export type DisplayMode = "live" | "recorded";
 export type FieldType = "text" | "email" | "tel" | "textarea";
 export type PhoneRegion = "BR" | "US";
 export type TriggerType = "button" | "cart";
-export type ChatMessageKind = "question" | "comment" | "reaction" | "team_reply";
 export type TranscriptionStatus = "pending" | "processing" | "completed" | "failed";
 export type ScheduleRecurrence = "once" | "daily" | "weekly";
-
-export interface ChatSnapshotMessage {
-  author_name: string;
-  message: string;
-  appear_at_seconds: number;
-  sort_order: number;
-  kind?: ChatMessageKind;
-}
 
 export interface TranscriptionSegment {
   start: number;
@@ -46,30 +37,17 @@ export interface Database {
           waiting_description: string | null;
           ai_context: string | null;
           ai_assistant_name: string | null;
-          landing_logo_url: string | null;
           landing_hero_image: string | null;
           landing_promo_video_url: string | null;
           landing_benefits: Json;
           landing_topics: Json;
-          landing_audience: Json;
-          landing_template: string;
-          landing_theme: Json;
-          landing_stats: Json;
+          landing_audience: string | null;
           host_name: string | null;
           host_title: string | null;
           host_bio: string | null;
           host_image_url: string | null;
           landing_cta_text: string | null;
           landing_footer: Json;
-          post_live_hold_minutes: number;
-          post_live_title: string | null;
-          post_live_description: string | null;
-          viewer_count_start: number | null;
-          viewer_count_mid: number | null;
-          viewer_count_end: number | null;
-          chat_generate_count: number;
-          chat_participant_enabled: boolean;
-          chat_blocked_words: Json;
           created_at: string;
           updated_at: string;
         };
@@ -120,7 +98,6 @@ export interface Database {
           message: string;
           appear_at_seconds: number;
           sort_order: number;
-          kind: ChatMessageKind;
         };
         Insert: Omit<Database["public"]["Tables"]["webinar_chat_messages"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Insert"]>;
@@ -165,7 +142,6 @@ export interface Database {
           author_name: string;
           message: string;
           is_ai_response: boolean;
-          session_date: string;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["webinar_live_messages"]["Row"], "id" | "created_at"> & {
@@ -187,20 +163,6 @@ export interface Database {
           attended_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Insert"]>;
-      };
-      webinar_chat_snapshots: {
-        Row: {
-          id: string;
-          webinar_id: string;
-          label: string;
-          messages: Json;
-          created_at: string;
-        };
-        Insert: Omit<Database["public"]["Tables"]["webinar_chat_snapshots"]["Row"], "id" | "created_at"> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_chat_snapshots"]["Insert"]>;
       };
       webinar_trigger_clicks: {
         Row: {

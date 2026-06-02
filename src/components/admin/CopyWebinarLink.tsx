@@ -33,23 +33,18 @@ export function CopyWebinarLink({ slug, published = true, variant = "default" }:
   if (variant === "inline") {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm font-medium text-white/90">
-          <Link2 className="size-4 text-brand-teal" />
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Link2 className="size-4 text-primary" />
           Link para compartilhar no grupo
         </div>
         {!published && (
-          <p className="text-xs text-amber-400/90">
+          <p className="text-xs text-amber-600 dark:text-amber-400">
             Publique o webinar para que o link funcione para os participantes.
           </p>
         )}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Input readOnly value={fullUrl} className="h-9 font-mono text-xs" />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCopy}
-            className="shrink-0 gap-2 border-white/[0.08] bg-[#17181A] sm:w-auto"
-          >
+          <Input readOnly value={fullUrl} className="h-9 bg-background font-mono text-xs" />
+          <Button type="button" variant="secondary" onClick={handleCopy} className="shrink-0 gap-2 sm:w-auto">
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             {copied ? "Copiado" : "Copiar"}
           </Button>
@@ -59,24 +54,19 @@ export function CopyWebinarLink({ slug, published = true, variant = "default" }:
   }
 
   return (
-    <div className="dojo-surface-card space-y-3 p-4">
-      <div className="flex items-center gap-2 text-sm font-medium text-white/90">
-        <Link2 className="size-4 text-brand-teal" />
+    <div className="space-y-3 rounded-lg border bg-muted/40 p-4">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Link2 className="size-4 text-primary" />
         Link para compartilhar no grupo
       </div>
       {!published && (
-        <p className="text-xs text-amber-400/90">
+        <p className="text-xs text-amber-600 dark:text-amber-400">
           Publique o webinar para que o link funcione para os participantes.
         </p>
       )}
       <div className="flex gap-2">
-        <Input readOnly value={fullUrl} className="font-mono text-xs" />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCopy}
-          className="shrink-0 gap-2 border-white/[0.08] bg-[#17181A]"
-        >
+        <Input readOnly value={fullUrl} className="bg-background font-mono text-xs" />
+        <Button type="button" variant="secondary" onClick={handleCopy} className="shrink-0 gap-2">
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copiado" : "Copiar"}
         </Button>

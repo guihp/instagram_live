@@ -74,12 +74,10 @@ export function WebinarLivePreview({
 }: WebinarLivePreviewProps) {
   const assistantDisplayName = resolveAiAssistantName(aiAssistantName);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoShellRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevTimeRef = useRef(0);
 
   const [currentTime, setCurrentTime] = useState(0);
-  const [videoHeight, setVideoHeight] = useState<number | null>(null);
   const [viewerCount] = useState(() => Math.floor(Math.random() * 150) + 820);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [shownScriptedIds, setShownScriptedIds] = useState<Set<string>>(new Set());
@@ -91,21 +89,6 @@ export function WebinarLivePreview({
     if (videoUrl.startsWith("blob:") || videoUrl.startsWith("http")) return videoUrl;
     return getVideoPublicUrl(videoUrl);
   }, [videoUrl]);
-
-  useEffect(() => {
-    const node = videoShellRef.current;
-    if (!node) return;
-
-    const updateHeight = () => setVideoHeight(node.getBoundingClientRect().height);
-    updateHeight();
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(node);
-    window.addEventListener("resize", updateHeight);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateHeight);
-    };
-  }, [playbackUrl]);
 
   const sortedScripted = useMemo(
     () =>
@@ -220,7 +203,7 @@ export function WebinarLivePreview({
   const scriptedCount = sortedScripted.length;
 
   return (
-    <div className={cn("dojo-surface-card space-y-3 p-4", className)}>
+    <div className={cn("space-y-3 rounded-xl border bg-muted/20 p-4", className)}>
       <div className="flex flex-wrap items-center gap-2">
         <Eye className="size-4 text-primary" />
         <h3 className="font-semibold">Pré-visualização da live</h3>
@@ -229,9 +212,9 @@ export function WebinarLivePreview({
         </Badge>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_minmax(280px,360px)] lg:items-start xl:grid-cols-[1fr_380px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <div className="space-y-3">
-          <div ref={videoShellRef} className="relative overflow-hidden rounded-lg bg-black">
+          <div className="relative overflow-hidden rounded-lg bg-black">
             {displayMode === "live" && (
               <div className="absolute left-3 top-3 z-10 flex items-center gap-2">
                 <Badge variant="destructive" className="animate-pulse gap-1.5">
@@ -279,10 +262,7 @@ export function WebinarLivePreview({
           )}
         </div>
 
-        <div
-          className="flex h-[min(360px,45vh)] min-h-[280px] flex-col overflow-hidden rounded-lg border border-white/[0.06] bg-[#17181A] lg:min-h-0"
-          style={videoHeight ? { height: `${Math.round(videoHeight)}px` } : undefined}
-        >
+        <div className="flex h-[380px] flex-col rounded-lg border bg-background lg:h-auto lg:min-h-[320px]">
           <div className="border-b px-3 py-2">
             <p className="text-sm font-semibold">Chat ao vivo</p>
             <p className="text-xs text-muted-foreground">

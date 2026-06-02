@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Maximize2, Minimize2, Volume2 } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getSessionState } from "@/lib/webinar/schedule";
 import {
   getSyncedPlaybackPosition,
   getVideoPublicUrl,
   getYoutubeEmbedUrl,
   toScheduleConfig,
 } from "@/lib/webinar/playback";
-import { getSimulatedViewerCount, type ViewerCountConfig } from "@/lib/webinar/viewer-count";
 
 interface SyncedVideoPlayerProps {
   scheduledAt: string;
@@ -21,26 +19,8 @@ interface SyncedVideoPlayerProps {
   videoUrl: string | null;
   durationSeconds: number | null;
   displayMode: "live" | "recorded";
-  viewerCountConfig?: ViewerCountConfig;
   className?: string;
   onTimeUpdate?: (currentTime: number) => void;
-  /** Último frame visível (não tenta dar play após o fim). */
-  freezeAtEnd?: boolean;
-}
-
-function resolveStreamDuration(
-  configuredSeconds: number | null,
-  video?: HTMLVideoElement | null,
-): number | null {
-  const fromFile =
-    video && Number.isFinite(video.duration) && video.duration > 0 ? video.duration : null;
-
-  if (fromFile && configuredSeconds && configuredSeconds > 0) {
-    if (configuredSeconds > fromFile * 1.5) return fromFile;
-    return Math.max(fromFile, configuredSeconds);
-  }
-
-  return fromFile ?? (configuredSeconds && configuredSeconds > 0 ? configuredSeconds : null);
 }
 
 export function SyncedVideoPlayer({
@@ -51,28 +31,16 @@ export function SyncedVideoPlayer({
   videoUrl,
   durationSeconds,
   displayMode,
-  viewerCountConfig,
   className,
   onTimeUpdate,
-  freezeAtEnd = false,
 }: SyncedVideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const onTimeUpdateRef = useRef(onTimeUpdate);
-  const syncingRef = useRef(false);
-  const userUnmutedRef = useRef(false);
-  const [viewerCount, setViewerCount] = useState(() =>
-    getSimulatedViewerCount(viewerCountConfig ?? {}, 0, 0),
-  );
-  const [tick, setTick] = useState(0);
+  const [viewerCount] = useState(() => Math.floor(Math.random() * 200) + 847);
   const [isVisible, setIsVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isMutedForAutoplay, setIsMutedForAutoplay] = useState(false);
-  const [isLiveSession, setIsLiveSession] = useState(false);
   const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const publicUrl = videoType === "upload" ? getVideoPublicUrl(videoUrl) : null;
-  const youtubeEmbed = videoType === "youtube" && videoUrl ? getYoutubeEmbedUrl(videoUrl) : null;
 
   onTimeUpdateRef.current = onTimeUpdate;
 
@@ -86,129 +54,21 @@ export function SyncedVideoPlayer({
     [scheduledAt, scheduleRecurrence, scheduleWeekday],
   );
 
-  const getTargetPosition = useCallback(
-    (video?: HTMLVideoElement | null) => {
-      const elapsed = getSyncedPlaybackPosition(scheduleConfig, durationSeconds);
-      const streamDuration = resolveStreamDuration(durationSeconds, video);
-      if (streamDuration != null) {
-        return Math.min(elapsed, Math.max(0, streamDuration - 0.05));
-      }
-      return elapsed;
-    },
-    [scheduleConfig, durationSeconds],
-  );
-
-  const isAtStreamEnd = useCallback(
-    (position: number, video?: HTMLVideoElement | null) => {
-      const streamDuration = resolveStreamDuration(durationSeconds, video);
-      return streamDuration != null && position >= streamDuration - 0.5;
-    },
-    [durationSeconds],
-  );
-
-  const tryPlay = useCallback(
-    async (video: HTMLVideoElement, position: number) => {
-      if (!isVisible || isAtStreamEnd(position, video)) return;
-
-      const attempt = async (muted: boolean) => {
-        video.muted = muted;
-        await video.play();
-      };
-
-      try {
-        if (!userUnmutedRef.current) {
-          await attempt(true);
-          setIsMutedForAutoplay(true);
-          return;
-        }
-        await attempt(false);
-        setIsMutedForAutoplay(false);
-      } catch {
-        try {
-          await attempt(true);
-          setIsMutedForAutoplay(true);
-        } catch {
-          /* browser bloqueou autoplay */
-        }
-      }
-    },
-    [isVisible, isAtStreamEnd],
-  );
-
-  const seekVideo = useCallback(
-    (video: HTMLVideoElement, position: number, playAfter = true) => {
-      if (video.readyState < 1) return;
-
-      syncingRef.current = true;
-      const finish = () => {
-        syncingRef.current = false;
-        if (playAfter && !isAtStreamEnd(position, video)) {
-          void tryPlay(video, position);
-        }
-      };
-
-      if (Math.abs(video.currentTime - position) < 0.35) {
-        finish();
-        return;
-      }
-
-      const onSeeked = () => {
-        video.removeEventListener("seeked", onSeeked);
-        finish();
-      };
-
-      video.addEventListener("seeked", onSeeked);
-      video.currentTime = position;
-    },
-    [isAtStreamEnd, tryPlay],
-  );
-
   const syncToClock = useCallback(() => {
-    const { isLive } = getSessionState(scheduleConfig);
-    setIsLiveSession(isLive);
-
-    if (videoType !== "upload" || !videoRef.current) {
-      onTimeUpdateRef.current?.(getTargetPosition());
-      return;
-    }
-
-    const video = videoRef.current;
-    const position = getTargetPosition(video);
+    const position = getSyncedPlaybackPosition(scheduleConfig, durationSeconds);
     onTimeUpdateRef.current?.(position);
 
-    if (!isLive || position <= 0) {
-      if (!video.paused) video.pause();
-      return;
+    if (videoType === "upload" && videoRef.current) {
+      const video = videoRef.current;
+      const drift = Math.abs(video.currentTime - position);
+      if (drift > 1.5) {
+        video.currentTime = position;
+      }
+      if (isVisible && video.paused && position > 0) {
+        video.play().catch(() => {});
+      }
     }
-
-    if (video.readyState < 1) return;
-
-    if (isAtStreamEnd(position, video)) {
-      seekVideo(video, position, false);
-      if (!video.paused) video.pause();
-      return;
-    }
-
-    if (freezeAtEnd) return;
-
-    const drift = Math.abs(video.currentTime - position);
-    if (drift > 1.5 || video.paused) {
-      seekVideo(video, position, true);
-    } else if (video.paused) {
-      void tryPlay(video, position);
-    }
-  }, [scheduleConfig, videoType, getTargetPosition, isAtStreamEnd, seekVideo, tryPlay, freezeAtEnd]);
-
-  useEffect(() => {
-    const duration = resolveStreamDuration(durationSeconds, videoRef.current);
-    const progress = duration && duration > 0 ? getTargetPosition(videoRef.current) / duration : 0;
-    setViewerCount(getSimulatedViewerCount(viewerCountConfig ?? {}, progress, tick));
-  }, [tick, viewerCountConfig, durationSeconds, getTargetPosition]);
-
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 8000);
-    return () => clearInterval(id);
-  }, []);
+  }, [scheduleConfig, durationSeconds, videoType, isVisible]);
 
   useEffect(() => {
     syncToClock();
@@ -217,19 +77,6 @@ export function SyncedVideoPlayer({
       if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
     };
   }, [syncToClock]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const onReady = () => syncToClock();
-    video.addEventListener("loadedmetadata", onReady);
-    video.addEventListener("canplay", onReady);
-    return () => {
-      video.removeEventListener("loadedmetadata", onReady);
-      video.removeEventListener("canplay", onReady);
-    };
-  }, [syncToClock, publicUrl]);
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -252,11 +99,10 @@ export function SyncedVideoPlayer({
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
-      syncToClock();
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, [syncToClock]);
+  }, []);
 
   const toggleFullscreen = useCallback(async () => {
     const container = containerRef.current;
@@ -278,15 +124,8 @@ export function SyncedVideoPlayer({
     }
   }, []);
 
-  const handleUnmute = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    userUnmutedRef.current = true;
-    video.muted = false;
-    setIsMutedForAutoplay(false);
-    void video.play().catch(() => {});
-    syncToClock();
-  }, [syncToClock]);
+  const publicUrl = videoType === "upload" ? getVideoPublicUrl(videoUrl) : null;
+  const youtubeEmbed = videoType === "youtube" && videoUrl ? getYoutubeEmbedUrl(videoUrl) : null;
 
   return (
     <div
@@ -325,39 +164,23 @@ export function SyncedVideoPlayer({
             src={publicUrl}
             className="aspect-video w-full object-contain"
             playsInline
-            autoPlay
-            muted
+            muted={false}
             controls={false}
             disablePictureInPicture
-            preload="auto"
-            controlsList="nodownload noremoteplayback noplaybackrate nofullscreen"
+            controlsList="nodownload noremoteplayback noplaybackrate"
             onContextMenu={(e) => e.preventDefault()}
-            onTimeUpdate={(e) => {
-              if (!syncingRef.current) {
-                onTimeUpdateRef.current?.(e.currentTarget.currentTime);
+            onPause={(e) => {
+              if (isVisible) {
+                e.currentTarget.play().catch(() => {});
+              }
+            }}
+            onSeeked={(e) => {
+              const position = getSyncedPlaybackPosition(scheduleConfig, durationSeconds);
+              if (Math.abs(e.currentTarget.currentTime - position) > 0.5) {
+                e.currentTarget.currentTime = position;
               }
             }}
           />
-
-          {!isLiveSession && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 px-6 text-center">
-              <p className="text-sm font-medium text-white/90 sm:text-base">
-                A transmissão começa em breve. Aguarde o horário da aula.
-              </p>
-            </div>
-          )}
-
-          {isMutedForAutoplay && isLiveSession && (
-            <button
-              type="button"
-              onClick={handleUnmute}
-              className="absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full bg-black/75 px-3 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/90 sm:text-sm"
-            >
-              <Volume2 className="size-4" />
-              Ativar som
-            </button>
-          )}
-
           <Button
             type="button"
             size="icon"
