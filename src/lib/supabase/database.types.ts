@@ -180,8 +180,13 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Insert"]>;
       };
     };
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
+    Enums: { [_ in never]: never };
+    CompositeTypes: { [_ in never]: never };
   };
 }
+
 
 export type Webinar = Database["public"]["Tables"]["webinars"]["Row"];
 export type WebinarFormField = Database["public"]["Tables"]["webinar_form_fields"]["Row"];
