@@ -38,19 +38,24 @@ interface WebinarEditorInsightsProps {
 
 export function WebinarEditorInsights({ leads, transcription }: WebinarEditorInsightsProps) {
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-white/[0.05] bg-[#1A1C22]/40 pb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-lg">Insights</CardTitle>
+            <CardTitle className="text-base font-medium text-white/90">Insights</CardTitle>
             <CardDescription>Leads capturados e transcrição do vídeo</CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="border-white/[0.08] bg-transparent text-white/70 hover:bg-white/[0.04] hover:text-white/90"
+          >
             <Link to="/admin/leads">Ver todos os leads</Link>
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Tabs defaultValue="leads">
           <TabsList className="mb-4">
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
@@ -60,10 +65,10 @@ export function WebinarEditorInsights({ leads, transcription }: WebinarEditorIns
           </TabsList>
 
           <TabsContent value="leads" className="mt-0">
-            <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-hidden rounded-xl border border-white/[0.06]">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-white/[0.05] hover:bg-transparent">
                     <TableHead>Inscrição</TableHead>
                     <TableHead>Participante</TableHead>
                     <TableHead>Contato</TableHead>
@@ -74,8 +79,8 @@ export function WebinarEditorInsights({ leads, transcription }: WebinarEditorIns
                   {leads.map((lead) => {
                     const data = parseLeadData(lead.data);
                     return (
-                      <TableRow key={lead.id}>
-                        <TableCell className="whitespace-nowrap text-sm">
+                      <TableRow key={lead.id} className="border-white/[0.05]">
+                        <TableCell className="whitespace-nowrap text-sm text-white/80">
                           {formatBrasiliaDateTime(lead.registered_at, {
                             day: "2-digit",
                             month: "2-digit",
@@ -84,11 +89,13 @@ export function WebinarEditorInsights({ leads, transcription }: WebinarEditorIns
                             minute: "2-digit",
                           })}
                         </TableCell>
-                        <TableCell className="font-medium">{leadDisplayName(lead.data)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="font-medium text-white/90">
+                          {leadDisplayName(lead.data)}
+                        </TableCell>
+                        <TableCell className="text-sm text-[#606270]">
                           {[data.email, data.phone].filter(Boolean).join(" · ") || "—"}
                         </TableCell>
-                        <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">
+                        <TableCell className="max-w-[180px] truncate text-xs text-[#606270]">
                           {[lead.utm_source, lead.utm_medium, lead.utm_campaign].filter(Boolean).join(" / ") ||
                             "—"}
                         </TableCell>
@@ -97,7 +104,7 @@ export function WebinarEditorInsights({ leads, transcription }: WebinarEditorIns
                   })}
                   {leads.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                      <TableCell colSpan={4} className="py-10 text-center text-[#606270]">
                         Nenhum lead inscrito neste webinar ainda.
                       </TableCell>
                     </TableRow>
@@ -111,33 +118,37 @@ export function WebinarEditorInsights({ leads, transcription }: WebinarEditorIns
             {transcription ? (
               <>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Status:</span>
-                  <Badge variant="outline">{transcription.status}</Badge>
+                  <span className="text-[#606270]">Status:</span>
+                  <Badge variant="outline" className="border-white/[0.08] text-[#606270]">
+                    {transcription.status}
+                  </Badge>
                   {transcription.processed_at && (
-                    <span className="text-muted-foreground">
+                    <span className="text-[#606270]">
                       · processado em {formatBrasiliaDateTime(transcription.processed_at)}
                     </span>
                   )}
                 </div>
                 {transcription.ai_summary && (
-                  <div className="rounded-lg border bg-muted/30 p-4">
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="rounded-xl border border-white/[0.06] bg-[#1A1C22]/50 p-4">
+                    <p className="mb-2 text-[0.65rem] font-medium uppercase tracking-[0.12em] text-[#606270]">
                       Resumo
                     </p>
-                    <p className="text-sm leading-relaxed">{transcription.ai_summary}</p>
+                    <p className="text-sm leading-relaxed text-white/80">{transcription.ai_summary}</p>
                   </div>
                 )}
                 {transcription.full_text && (
-                  <details className="rounded-lg border p-4">
-                    <summary className="cursor-pointer text-sm font-medium">Ver transcrição completa</summary>
-                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs leading-relaxed">
+                  <details className="rounded-xl border border-white/[0.06] p-4">
+                    <summary className="cursor-pointer text-sm font-medium text-white/90">
+                      Ver transcrição completa
+                    </summary>
+                    <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-lg border border-white/[0.06] bg-[#141414] p-3 text-xs leading-relaxed text-white/70">
                       {transcription.full_text}
                     </pre>
                   </details>
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#606270]">
                 A transcrição aparecerá aqui após o processamento do vídeo.
               </p>
             )}

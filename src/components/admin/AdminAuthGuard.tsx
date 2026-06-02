@@ -36,8 +36,8 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      <div className="flex min-h-screen items-center justify-center bg-[#0F1114]">
+        <Loader2 className="size-8 animate-spin text-brand-teal" />
       </div>
     );
   }

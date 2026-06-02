@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,7 +19,13 @@ import { Route as AdminWebinarsIndexRouteImport } from './routes/admin/webinars/
 import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
 import { Route as AdminWebinarsNewRouteImport } from './routes/admin/webinars/new'
 import { Route as AdminWebinarsIdRouteImport } from './routes/admin/webinars/$id'
+import { Route as AdminWebinarsLandingPreviewIdRouteImport } from './routes/admin/webinars/landing-preview.$id'
 
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -64,39 +71,51 @@ const AdminWebinarsIdRoute = AdminWebinarsIdRouteImport.update({
   path: '/webinars/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWebinarsLandingPreviewIdRoute =
+  AdminWebinarsLandingPreviewIdRouteImport.update({
+    id: '/webinars/landing-preview/$id',
+    path: '/webinars/landing-preview/$id',
+    getParentRoute: () => AdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads/': typeof AdminLeadsIndexRoute
   '/admin/webinars/': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads': typeof AdminLeadsIndexRoute
   '/admin/webinars': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
   '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/webinars/$id': typeof AdminWebinarsIdRoute
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads/': typeof AdminLeadsIndexRoute
   '/admin/webinars/': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -104,44 +123,58 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin/'
     | '/admin/webinars/$id'
     | '/admin/webinars/new'
     | '/admin/leads/'
     | '/admin/webinars/'
+    | '/admin/webinars/landing-preview/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin'
     | '/admin/webinars/$id'
     | '/admin/webinars/new'
     | '/admin/leads'
     | '/admin/webinars'
+    | '/admin/webinars/landing-preview/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/login'
+    | '/setup'
     | '/webinar/$slug'
     | '/admin/'
     | '/admin/webinars/$id'
     | '/admin/webinars/new'
     | '/admin/leads/'
     | '/admin/webinars/'
+    | '/admin/webinars/landing-preview/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SetupRoute: typeof SetupRoute
   WebinarSlugRoute: typeof WebinarSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -205,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebinarsIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/webinars/landing-preview/$id': {
+      id: '/admin/webinars/landing-preview/$id'
+      path: '/webinars/landing-preview/$id'
+      fullPath: '/admin/webinars/landing-preview/$id'
+      preLoaderRoute: typeof AdminWebinarsLandingPreviewIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -214,6 +254,7 @@ interface AdminRouteChildren {
   AdminWebinarsNewRoute: typeof AdminWebinarsNewRoute
   AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
   AdminWebinarsIndexRoute: typeof AdminWebinarsIndexRoute
+  AdminWebinarsLandingPreviewIdRoute: typeof AdminWebinarsLandingPreviewIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -222,6 +263,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminWebinarsNewRoute: AdminWebinarsNewRoute,
   AdminLeadsIndexRoute: AdminLeadsIndexRoute,
   AdminWebinarsIndexRoute: AdminWebinarsIndexRoute,
+  AdminWebinarsLandingPreviewIdRoute: AdminWebinarsLandingPreviewIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -230,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  SetupRoute: SetupRoute,
   WebinarSlugRoute: WebinarSlugRoute,
 }
 export const routeTree = rootRouteImport
