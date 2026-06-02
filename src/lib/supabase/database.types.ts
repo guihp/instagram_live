@@ -51,12 +51,8 @@ export interface Database {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinars"]["Row"], "id" | "created_at" | "updated_at"> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinars"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinars"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinars"]["Row"]>;
       Relationships: [];
       };
       webinar_form_fields: {
@@ -71,8 +67,8 @@ export interface Database {
           sort_order: number;
           phone_region: PhoneRegion | null;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_form_fields"]["Row"], "id"> & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Row"]>;
       Relationships: [];
       };
       webinar_leads: {
@@ -86,11 +82,8 @@ export interface Database {
           session_id: string | null;
           registered_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_leads"]["Row"], "id" | "registered_at"> & {
-          id?: string;
-          registered_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_leads"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_leads"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_leads"]["Row"]>;
       Relationships: [];
       };
       webinar_chat_messages: {
@@ -102,8 +95,8 @@ export interface Database {
           appear_at_seconds: number;
           sort_order: number;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_chat_messages"]["Row"], "id"> & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Row"]>;
       Relationships: [];
       };
       webinar_triggers: {
@@ -118,8 +111,8 @@ export interface Database {
           detected_from_transcript: boolean;
           transcript_snippet: string | null;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_triggers"]["Row"], "id"> & { id?: string };
-        Update: Partial<Database["public"]["Tables"]["webinar_triggers"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_triggers"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_triggers"]["Row"]>;
       Relationships: [];
       };
       webinar_transcriptions: {
@@ -133,11 +126,8 @@ export interface Database {
           processed_at: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_transcriptions"]["Row"], "id" | "created_at"> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Row"]>;
       Relationships: [];
       };
       webinar_live_messages: {
@@ -150,11 +140,8 @@ export interface Database {
           is_ai_response: boolean;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_live_messages"]["Row"], "id" | "created_at"> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Row"]>;
       Relationships: [];
       };
       webinar_lead_attendance: {
@@ -165,11 +152,8 @@ export interface Database {
           session_date: string;
           attended_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"], "id" | "attended_at"> & {
-          id?: string;
-          attended_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"]>;
       Relationships: [];
       };
       webinar_trigger_clicks: {
@@ -181,11 +165,8 @@ export interface Database {
           session_date: string;
           clicked_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"], "id" | "clicked_at"> & {
-          id?: string;
-          clicked_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Insert"]>;
+        Insert: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"]>;
       Relationships: [];
       };
     };
