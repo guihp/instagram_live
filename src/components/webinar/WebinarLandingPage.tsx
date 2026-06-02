@@ -210,7 +210,7 @@ export function WebinarLandingPage({
                 {hasPromoVideo ? (
                   <div className="overflow-hidden rounded-2xl bg-black shadow-[0_32px_80px_-24px_rgba(0,0,0,0.65)] ring-1 ring-white/15 lg:rounded-3xl">
                     <video
-                      src={promoVideoUrl}
+                      src={promoVideoUrl ?? undefined}
                       controls
                       playsInline
                       preload="metadata"
