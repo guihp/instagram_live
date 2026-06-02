@@ -57,6 +57,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinars"]["Insert"]>;
+      Relationships: [];
       };
       webinar_form_fields: {
         Row: {
@@ -72,6 +73,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["webinar_form_fields"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Insert"]>;
+      Relationships: [];
       };
       webinar_leads: {
         Row: {
@@ -89,6 +91,7 @@ export interface Database {
           registered_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_leads"]["Insert"]>;
+      Relationships: [];
       };
       webinar_chat_messages: {
         Row: {
@@ -101,6 +104,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["webinar_chat_messages"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Insert"]>;
+      Relationships: [];
       };
       webinar_triggers: {
         Row: {
@@ -116,6 +120,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["webinar_triggers"]["Row"], "id"> & { id?: string };
         Update: Partial<Database["public"]["Tables"]["webinar_triggers"]["Insert"]>;
+      Relationships: [];
       };
       webinar_transcriptions: {
         Row: {
@@ -133,6 +138,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Insert"]>;
+      Relationships: [];
       };
       webinar_live_messages: {
         Row: {
@@ -149,6 +155,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Insert"]>;
+      Relationships: [];
       };
       webinar_lead_attendance: {
         Row: {
@@ -163,6 +170,7 @@ export interface Database {
           attended_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Insert"]>;
+      Relationships: [];
       };
       webinar_trigger_clicks: {
         Row: {
@@ -178,6 +186,7 @@ export interface Database {
           clicked_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Insert"]>;
+      Relationships: [];
       };
     };
     Views: { [_ in never]: never };
