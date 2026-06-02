@@ -82,11 +82,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Webinar Platform" },
       { name: "description", content: "Plataforma de webinars ao vivo" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Webinar Platform" },
+      { property: "og:description", content: "Plataforma de webinars ao vivo" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Webinar Platform" },
+      { name: "twitter:description", content: "Plataforma de webinars ao vivo" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/394693d6-8aee-495d-bfec-eefc9f5cef72/id-preview-8a44e0eb--e783df19-1f9e-49e0-979c-8516b7086324.lovable.app-1780365082866.png" },
     ],
     links: [
       {
