@@ -12,4 +12,5 @@ export function isRequiredEnvConfigured(): boolean {
 }
 
 export const CONFIG_ERROR_HINT =
-  "Configure os 4 secrets em Lovable → Cloud → Secrets, rode as migrations SQL no Supabase e crie um usuário em Authentication → Users. Veja SETUP.md e .env.example.";
+  "No Lovable, o preview e o site publicado (ex.: dojo-webinar.lovable.app) podem usar secrets diferentes. " +
+  "Confira Cloud → Secrets no ambiente Live, adicione os 4 secrets, rode as migrations no Supabase, crie o usuário em Authentication → Users e clique Publish → Update. Veja SETUP.md.";

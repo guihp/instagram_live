@@ -8,7 +8,8 @@ export function createServiceClient() {
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY e VITE_SUPABASE_URL são obrigatórios no .env — reinicie o dev server",
+      "SUPABASE_SERVICE_ROLE_KEY e VITE_SUPABASE_URL são obrigatórios. " +
+        "No Lovable: Cloud → Secrets (ambiente Live/publicado), depois Publish → Update.",
     );
   }
 
