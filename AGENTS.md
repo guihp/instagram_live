@@ -39,13 +39,17 @@ Opcionais: `VITE_APP_URL`, `SUPABASE_STORAGE_MAX_BYTES`.
 
 ## Quando o usuário pedir setup
 
+**Não** crie tela `/setup` nem formulário de secrets no frontend. Secrets vão só em **Lovable → Cloud → Secrets** (ou `.env` local).
+
 Responda com checklist curto e ofereça executar cada passo:
 
 1. Criou projeto Supabase novo?
-2. Rodou migrations?
-3. Configurou os 4 secrets?
-4. Criou usuário admin?
+2. Rodou migrations (`supabase/migrations/` em ordem)?
+3. Configurou os 4 secrets no Lovable Cloud?
+4. Criou usuário admin em Authentication → Users?
 5. (Opcional) Conta OpenRouter com créditos?
+
+O prompt pronto para colar no chat Lovable está em **`.env.example`** (final do arquivo). Guia completo: **SETUP.md**.
 
 Se faltar migration ou secret, o app falha com mensagens em português nos handlers — use-as para diagnosticar.
 

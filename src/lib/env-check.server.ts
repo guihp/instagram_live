@@ -1,4 +1,4 @@
-import { getEnvVar } from "../load-env.server";
+import { getEnvVar } from "./load-env.server";
 
 /** Verifica apenas presença das variáveis — sem testar banco (rápido para error handlers). */
 export function isRequiredEnvConfigured(): boolean {
@@ -10,3 +10,6 @@ export function isRequiredEnvConfigured(): boolean {
   ] as const;
   return keys.every((key) => Boolean(getEnvVar(key)));
 }
+
+export const CONFIG_ERROR_HINT =
+  "Configure os 4 secrets em Lovable → Cloud → Secrets, rode as migrations SQL no Supabase e crie um usuário em Authentication → Users. Veja SETUP.md e .env.example.";

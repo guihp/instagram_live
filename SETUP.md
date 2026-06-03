@@ -36,6 +36,8 @@ O schema está em `supabase/migrations/`. Rode **todos** os arquivos, **na ordem
 | `20260530150000_trigger_appear_mode.sql` | Modo de aparição dos gatilhos |
 | `20260530160000_webinar_live_messages.sql` | Chat ao vivo |
 | `20260530170000_ai_assistant_name.sql` | Nome do assistente IA |
+| `20260601120000_landing_templates.sql` | Templates de landing |
+| `20260602130000_landing_logo.sql` | Logo customizada na landing |
 
 ### Opção A — SQL Editor (mais simples)
 
@@ -123,14 +125,12 @@ O admin mostra o link correto do **seu** dashboard (derivado de `VITE_SUPABASE_U
 ## 7. Remix no Lovable
 
 1. **Remix** o projeto ou conecte o repo GitHub
-2. Siga os passos 1–4 deste guia
-3. Cole no chat do Lovable:
+2. Siga os passos 1–4 deste guia (Supabase, migrations, secrets, usuário admin)
+3. Cole no chat do Lovable o bloco **"LOVABLE — PROMPT PARA COLAR NO CHAT"** no final de `.env.example`
+4. **Não** use tela de setup no app — secrets só em **Cloud → Secrets**
+5. Habilite **Enable public remixing** em Project settings se quiser que outros remixem a partir do seu fork
 
-   > Configure meu ambiente seguindo SETUP.md. Já tenho [Supabase URL / keys / OpenRouter]. Me guie no que falta.
-
-4. Habilite **Enable public remixing** em Project settings se quiser que outros remixem a partir do seu fork
-
-O agente Lovable lê `AGENTS.md` e este arquivo automaticamente.
+O agente Lovable lê `AGENTS.md`, `SETUP.md` e `.env.example` automaticamente.
 
 ---
 
@@ -138,7 +138,8 @@ O agente Lovable lê `AGENTS.md` e este arquivo automaticamente.
 
 | Sintoma | Provável causa |
 |---------|----------------|
-| "VITE_SUPABASE_URL é obrigatório" | Secrets não configurados ou dev server não reiniciado |
+| "VITE_SUPABASE_URL é obrigatório" | Secrets não configurados em Cloud → Secrets ou preview não republicado |
+| Redirecionamento / erro ao abrir o app | Falta secret ou migration — veja `.env.example` e SETUP.md |
 | "Webinar não encontrado" | Migration não rodou ou webinar não publicado |
 | Erro 42P01 (tabela inexistente) | Migrations incompletas |
 | Upload falha com 413 | Limite global do Storage — veja passo 6 |

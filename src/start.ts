@@ -1,7 +1,7 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { isRequiredEnvConfigured } from "./lib/setup/env-check.server";
+import { isRequiredEnvConfigured } from "./lib/env-check.server";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
