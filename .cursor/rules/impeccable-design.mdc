@@ -1,0 +1,33 @@
+---
+description: Contexto de design (Impeccable) — ler antes de mudanças visuais em UI
+globs:
+  - src/**/*.tsx
+  - src/**/*.css
+alwaysApply: false
+---
+
+# Design (Impeccable)
+
+Este projeto usa a skill **Impeccable** em `.cursor/skills/impeccable/`.
+
+## Antes de editar UI
+
+1. Ler `PRODUCT.md` (estratégia) e `DESIGN.md` (tokens e componentes).
+2. Para tarefas de design explícitas, o usuário pode invocar `/impeccable <comando>` (ex.: `audit`, `polish`, `critique`, `layout`).
+3. Superfície **brand** (landing `/webinar/:slug` register/waiting) → seguir register brand em `PRODUCT.md`. **Product** → admin, login, live room.
+
+## Stack UI
+
+- shadcn/ui em `src/components/ui/`
+- Tokens OKLCH em `src/styles.css` — não adicionar cores fora de OKLCH no tema global
+- Tailwind v4 utilitários
+
+## Detector (sem IA)
+
+```bash
+npx impeccable detect src/
+```
+
+## Live mode (variantes no browser)
+
+Config: `.impeccable/live/config.json`. Com dev server rodando: `/impeccable live`.

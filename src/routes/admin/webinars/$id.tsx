@@ -22,6 +22,7 @@ function EditWebinarPage() {
 
       <WebinarEditor
         webinarId={id}
+        sourceWebinar={webinar}
         hideShareLink
         transcriptionStatus={transcription?.status}
         insights={{ leads, transcription }}

@@ -6,8 +6,17 @@ export type DisplayMode = "live" | "recorded";
 export type FieldType = "text" | "email" | "tel" | "textarea";
 export type PhoneRegion = "BR" | "US";
 export type TriggerType = "button" | "cart";
+export type ChatMessageKind = "question" | "comment" | "reaction" | "team_reply";
 export type TranscriptionStatus = "pending" | "processing" | "completed" | "failed";
 export type ScheduleRecurrence = "once" | "daily" | "weekly";
+
+export interface ChatSnapshotMessage {
+  author_name: string;
+  message: string;
+  appear_at_seconds: number;
+  sort_order: number;
+  kind?: ChatMessageKind;
+}
 
 export interface TranscriptionSegment {
   start: number;
@@ -37,23 +46,39 @@ export interface Database {
           waiting_description: string | null;
           ai_context: string | null;
           ai_assistant_name: string | null;
+          landing_logo_url: string | null;
           landing_hero_image: string | null;
           landing_promo_video_url: string | null;
           landing_benefits: Json;
           landing_topics: Json;
-          landing_audience: string | null;
+          landing_audience: Json;
+          landing_template: string;
+          landing_theme: Json;
+          landing_stats: Json;
           host_name: string | null;
           host_title: string | null;
           host_bio: string | null;
           host_image_url: string | null;
           landing_cta_text: string | null;
           landing_footer: Json;
+          post_live_hold_minutes: number;
+          post_live_title: string | null;
+          post_live_description: string | null;
+          viewer_count_start: number | null;
+          viewer_count_mid: number | null;
+          viewer_count_end: number | null;
+          chat_generate_count: number;
+          chat_participant_enabled: boolean;
+          chat_blocked_words: Json;
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinars"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinars"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinars"]["Row"], "id" | "created_at" | "updated_at"> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinars"]["Insert"]>;
       };
       webinar_form_fields: {
         Row: {
@@ -67,9 +92,8 @@ export interface Database {
           sort_order: number;
           phone_region: PhoneRegion | null;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_form_fields"]["Row"], "id"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["webinar_form_fields"]["Insert"]>;
       };
       webinar_leads: {
         Row: {
@@ -82,9 +106,11 @@ export interface Database {
           session_id: string | null;
           registered_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_leads"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_leads"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_leads"]["Row"], "id" | "registered_at"> & {
+          id?: string;
+          registered_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_leads"]["Insert"]>;
       };
       webinar_chat_messages: {
         Row: {
@@ -94,10 +120,10 @@ export interface Database {
           message: string;
           appear_at_seconds: number;
           sort_order: number;
+          kind: ChatMessageKind;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_chat_messages"]["Row"], "id"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["webinar_chat_messages"]["Insert"]>;
       };
       webinar_triggers: {
         Row: {
@@ -111,9 +137,8 @@ export interface Database {
           detected_from_transcript: boolean;
           transcript_snippet: string | null;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_triggers"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_triggers"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_triggers"]["Row"], "id"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["webinar_triggers"]["Insert"]>;
       };
       webinar_transcriptions: {
         Row: {
@@ -126,9 +151,11 @@ export interface Database {
           processed_at: string | null;
           created_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_transcriptions"]["Row"], "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_transcriptions"]["Insert"]>;
       };
       webinar_live_messages: {
         Row: {
@@ -138,11 +165,14 @@ export interface Database {
           author_name: string;
           message: string;
           is_ai_response: boolean;
+          session_date: string;
           created_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_live_messages"]["Row"], "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_live_messages"]["Insert"]>;
       };
       webinar_lead_attendance: {
         Row: {
@@ -152,9 +182,25 @@ export interface Database {
           session_date: string;
           attended_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_lead_attendance"]["Row"], "id" | "attended_at"> & {
+          id?: string;
+          attended_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_lead_attendance"]["Insert"]>;
+      };
+      webinar_chat_snapshots: {
+        Row: {
+          id: string;
+          webinar_id: string;
+          label: string;
+          messages: Json;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["webinar_chat_snapshots"]["Row"], "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_chat_snapshots"]["Insert"]>;
       };
       webinar_trigger_clicks: {
         Row: {
@@ -165,18 +211,15 @@ export interface Database {
           session_date: string;
           clicked_at: string;
         };
-        Insert: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"]>;
-        Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"]>;
-      Relationships: [];
+        Insert: Omit<Database["public"]["Tables"]["webinar_trigger_clicks"]["Row"], "id" | "clicked_at"> & {
+          id?: string;
+          clicked_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["webinar_trigger_clicks"]["Insert"]>;
       };
     };
-    Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
-    Enums: { [_ in never]: never };
-    CompositeTypes: { [_ in never]: never };
   };
 }
-
 
 export type Webinar = Database["public"]["Tables"]["webinars"]["Row"];
 export type WebinarFormField = Database["public"]["Tables"]["webinar_form_fields"]["Row"];

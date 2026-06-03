@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,6 +49,7 @@ import type {
   FieldType,
   PhoneRegion,
   ScheduleRecurrence,
+  Webinar,
   WebinarStatus,
   VideoType,
 } from "@/lib/supabase/database.types";
@@ -118,6 +119,8 @@ interface WebinarInsightsData {
 
 interface WebinarEditorProps {
   webinarId?: string;
+  /** Webinar salvo no banco — base do preview da landing */
+  sourceWebinar?: Webinar;
   initial?: Partial<WebinarFormData> & {
     schedule_recurrence?: ScheduleRecurrence;
     schedule_weekday?: number | null;
@@ -156,6 +159,7 @@ const defaultForm: WebinarFormData = {
 
 export function WebinarEditor({
   webinarId,
+  sourceWebinar,
   initial,
   transcriptionStatus,
   hideShareLink = false,
@@ -206,6 +210,75 @@ export function WebinarEditor({
   const update = <K extends keyof WebinarFormData>(key: K, value: WebinarFormData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  const landingPreviewMeta = useMemo(() => {
+    const sched = scheduleFormToPayload(schedule);
+    return {
+      title: form.title,
+      description: form.description,
+      waiting_title: form.waiting_title,
+      waiting_description: form.waiting_description,
+      slug: form.slug,
+      scheduled_at: sched.scheduled_at,
+      schedule_recurrence: sched.schedule_recurrence,
+      schedule_weekday: sched.schedule_weekday,
+      group_link: form.group_link,
+    };
+  }, [form, schedule]);
+
+  const landingPreviewBase = useMemo((): Webinar | undefined => {
+    if (sourceWebinar) return sourceWebinar;
+    if (!form.title.trim() && !form.slug.trim()) return undefined;
+
+    const sched = scheduleFormToPayload(schedule);
+    const now = new Date().toISOString();
+
+    return {
+      id: webinarId ?? "00000000-0000-0000-0000-000000000001",
+      slug: form.slug || "preview",
+      title: form.title || "Webinar",
+      description: form.description || null,
+      scheduled_at: sched.scheduled_at,
+      schedule_recurrence: sched.schedule_recurrence,
+      schedule_weekday: sched.schedule_weekday,
+      status: form.status,
+      video_type: form.video_type,
+      video_url: form.video_url || null,
+      video_duration_seconds: form.video_duration_seconds,
+      group_link: form.group_link || null,
+      display_mode: form.display_mode,
+      waiting_title: form.waiting_title || null,
+      waiting_description: form.waiting_description || null,
+      ai_context: form.ai_context || null,
+      ai_assistant_name: form.ai_assistant_name || null,
+      landing_template: landing.landing_template,
+      landing_theme: landing.landing_theme,
+      landing_stats: landing.landing_stats,
+      landing_logo_url: landing.landing_logo_url || null,
+      landing_hero_image: landing.landing_hero_image || null,
+      landing_promo_video_url: landing.landing_promo_video_url || null,
+      landing_benefits: landing.landing_benefits,
+      landing_topics: landing.landing_topics,
+      landing_audience: landing.landing_audience,
+      host_name: landing.host_name || null,
+      host_title: landing.host_title || null,
+      host_bio: landing.host_bio || null,
+      host_image_url: landing.host_image_url || null,
+      landing_cta_text: landing.landing_cta_text || null,
+      landing_footer: landing.landing_footer,
+      post_live_hold_minutes: 60,
+      post_live_title: null,
+      post_live_description: null,
+      viewer_count_start: null,
+      viewer_count_mid: null,
+      viewer_count_end: null,
+      chat_generate_count: 20,
+      chat_participant_enabled: true,
+      chat_blocked_words: [],
+      created_at: now,
+      updated_at: now,
+    };
+  }, [sourceWebinar, form, schedule, landing, webinarId]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -567,7 +640,13 @@ export function WebinarEditor({
           </TabsContent>
 
         <TabsContent value="landing" className="mt-0 space-y-4">
-          <LandingPageEditor values={landing} onChange={setLanding} webinarId={webinarId} />
+          <LandingPageEditor
+            values={landing}
+            onChange={setLanding}
+            webinarId={webinarId}
+            previewBaseWebinar={landingPreviewBase}
+            previewMeta={landingPreviewMeta}
+          />
         </TabsContent>
 
         <TabsContent value="formulario" className="mt-0 space-y-4">

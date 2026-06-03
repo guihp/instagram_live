@@ -25,11 +25,21 @@ const webinarInputSchema = z.object({
   waiting_description: z.string().optional(),
   ai_context: z.string().optional(),
   ai_assistant_name: z.string().optional(),
+  landing_logo_url: z.string().nullable().optional(),
   landing_hero_image: z.string().nullable().optional(),
   landing_promo_video_url: z.string().nullable().optional(),
   landing_benefits: z.array(z.object({ title: z.string(), description: z.string().optional() })).optional(),
   landing_topics: z.array(z.string()).optional(),
-  landing_audience: z.string().nullable().optional(),
+  landing_audience: z.array(z.string()).optional(),
+  landing_template: z.enum(["classic", "sidebar", "centered"]).optional(),
+  landing_theme: z
+    .object({
+      variant: z.enum(["a", "b"]),
+      accent: z.string(),
+      heroMedia: z.enum(["video", "image", "none"]),
+    })
+    .optional(),
+  landing_stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
   host_name: z.string().nullable().optional(),
   host_title: z.string().nullable().optional(),
   host_bio: z.string().nullable().optional(),
@@ -43,6 +53,15 @@ const webinarInputSchema = z.object({
     })
     .nullable()
     .optional(),
+  post_live_hold_minutes: z.number().int().min(0).max(180).optional(),
+  post_live_title: z.string().nullable().optional(),
+  post_live_description: z.string().nullable().optional(),
+  viewer_count_start: z.number().int().min(0).nullable().optional(),
+  viewer_count_mid: z.number().int().min(0).nullable().optional(),
+  viewer_count_end: z.number().int().min(0).nullable().optional(),
+  chat_generate_count: z.number().int().min(8).max(50).optional(),
+  chat_participant_enabled: z.boolean().optional(),
+  chat_blocked_words: z.array(z.string()).optional(),
 });
 
 const formFieldSchema = z.object({
@@ -60,6 +79,7 @@ const chatMessageSchema = z.object({
   message: z.string(),
   appear_at_seconds: z.number(),
   sort_order: z.number(),
+  kind: z.enum(["question", "comment", "reaction", "team_reply"]).optional(),
 });
 
 const triggerSchema = z.object({
@@ -200,7 +220,7 @@ export const updateWebinar = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("webinars")
-      .update(data.webinar as never)
+      .update(data.webinar as Record<string, unknown>)
       .eq("id", data.id);
 
     if (error) throw new Error(error.message);
@@ -427,7 +447,13 @@ export const removeWebinarVideo = createServerFn({ method: "POST" })
   });
 
 export const requestTranscription = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ webinarId: z.string().uuid() }))
+  .inputValidator(
+    z.object({
+      webinarId: z.string().uuid(),
+      messageCount: z.number().int().min(8).max(50).optional(),
+      referenceWebinarId: z.string().uuid().optional(),
+    }),
+  )
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
 
@@ -439,7 +465,13 @@ export const requestTranscription = createServerFn({ method: "POST" })
       );
 
     try {
-      const result = await processVideoTranscription({ webinarId: data.webinarId });
+      const result = await processVideoTranscription(
+        { webinarId: data.webinarId },
+        {
+          messageCount: data.messageCount,
+          referenceWebinarId: data.referenceWebinarId,
+        },
+      );
       return {
         status: "completed" as const,
         summary: result.summary,
@@ -504,7 +536,7 @@ export const uploadWebinarAsset = createServerFn({ method: "POST" })
       fileName: z.string(),
       fileBase64: z.string(),
       contentType: z.string(),
-      assetType: z.enum(["hero", "promo", "host"]),
+      assetType: z.enum(["hero", "promo", "host", "logo"]),
     }),
   )
   .handler(async ({ data }) => {
@@ -697,6 +729,79 @@ export const previewChatReply = createServerFn({ method: "POST" })
         reply: "Não foi possível gerar a resposta agora. Verifique a OPENROUTER_API_KEY e tente de novo.",
       };
     }
+  });
+
+export const listChatSnapshots = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ webinarId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    const { data: rows, error } = await supabase
+      .from("webinar_chat_snapshots")
+      .select("id, label, created_at, messages")
+      .eq("webinar_id", data.webinarId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      if (error.code === "42P01") return [];
+      throw new Error(error.message);
+    }
+    return rows ?? [];
+  });
+
+export const saveChatSnapshot = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      webinarId: z.string().uuid(),
+      label: z.string().min(1).max(120),
+      messages: z.array(chatMessageSchema),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    const { data: row, error } = await supabase
+      .from("webinar_chat_snapshots")
+      .insert({
+        webinar_id: data.webinarId,
+        label: data.label,
+        messages: data.messages,
+      })
+      .select("id, label, created_at")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const listWebinarsForChatImport = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ excludeId: z.string().uuid().optional() }))
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    let query = supabase
+      .from("webinars")
+      .select("id, title, slug, created_at")
+      .order("created_at", { ascending: false });
+
+    if (data.excludeId) {
+      query = query.neq("id", data.excludeId);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const getWebinarChatMessagesForImport = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ webinarId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    const { data: messages, error } = await supabase
+      .from("webinar_chat_messages")
+      .select("author_name, message, appear_at_seconds, sort_order, kind")
+      .eq("webinar_id", data.webinarId)
+      .order("appear_at_seconds");
+
+    if (error) throw new Error(error.message);
+    return messages ?? [];
   });
 
 export type { WebinarStatus, DisplayMode, VideoType };

@@ -19,6 +19,7 @@ import { Route as AdminWebinarsIndexRouteImport } from './routes/admin/webinars/
 import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
 import { Route as AdminWebinarsNewRouteImport } from './routes/admin/webinars/new'
 import { Route as AdminWebinarsIdRouteImport } from './routes/admin/webinars/$id'
+import { Route as AdminWebinarsLandingPreviewIdRouteImport } from './routes/admin/webinars/landing-preview.$id'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -70,6 +71,12 @@ const AdminWebinarsIdRoute = AdminWebinarsIdRouteImport.update({
   path: '/webinars/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWebinarsLandingPreviewIdRoute =
+  AdminWebinarsLandingPreviewIdRouteImport.update({
+    id: '/webinars/landing-preview/$id',
+    path: '/webinars/landing-preview/$id',
+    getParentRoute: () => AdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads/': typeof AdminLeadsIndexRoute
   '/admin/webinars/': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +101,7 @@ export interface FileRoutesByTo {
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads': typeof AdminLeadsIndexRoute
   '/admin/webinars': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +115,7 @@ export interface FileRoutesById {
   '/admin/webinars/new': typeof AdminWebinarsNewRoute
   '/admin/leads/': typeof AdminLeadsIndexRoute
   '/admin/webinars/': typeof AdminWebinarsIndexRoute
+  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/admin/webinars/new'
     | '/admin/leads/'
     | '/admin/webinars/'
+    | '/admin/webinars/landing-preview/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/admin/webinars/new'
     | '/admin/leads'
     | '/admin/webinars'
+    | '/admin/webinars/landing-preview/$id'
   id:
     | '__root__'
     | '/'
@@ -143,6 +155,7 @@ export interface FileRouteTypes {
     | '/admin/webinars/new'
     | '/admin/leads/'
     | '/admin/webinars/'
+    | '/admin/webinars/landing-preview/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebinarsIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/webinars/landing-preview/$id': {
+      id: '/admin/webinars/landing-preview/$id'
+      path: '/webinars/landing-preview/$id'
+      fullPath: '/admin/webinars/landing-preview/$id'
+      preLoaderRoute: typeof AdminWebinarsLandingPreviewIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -234,6 +254,7 @@ interface AdminRouteChildren {
   AdminWebinarsNewRoute: typeof AdminWebinarsNewRoute
   AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
   AdminWebinarsIndexRoute: typeof AdminWebinarsIndexRoute
+  AdminWebinarsLandingPreviewIdRoute: typeof AdminWebinarsLandingPreviewIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -242,6 +263,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminWebinarsNewRoute: AdminWebinarsNewRoute,
   AdminLeadsIndexRoute: AdminLeadsIndexRoute,
   AdminWebinarsIndexRoute: AdminWebinarsIndexRoute,
+  AdminWebinarsLandingPreviewIdRoute: AdminWebinarsLandingPreviewIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
