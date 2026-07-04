@@ -29,7 +29,7 @@ Se o binário não estiver no PATH, defina `FFMPEG_PATH=/caminho/para/ffmpeg` no
 
 ### 2. Migration Supabase
 
-Rode a migration `supabase/migrations/20260613120000_ig_broadcasts.sql` no seu projeto Supabase (SQL Editor ou `supabase db push`).
+Rode a migration `supabase/migrations/20260704120000_initial_schema.sql` no seu projeto Supabase (SQL Editor ou `supabase db push`).
 
 ### 3. Variáveis de ambiente
 

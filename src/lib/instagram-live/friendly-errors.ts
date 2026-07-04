@@ -3,7 +3,8 @@
 const FRIENDLY_ERRORS: { test: RegExp; message: string }[] = [
   {
     test: /worker.*não configurado|WORKER_API_SECRET|fetch failed|ECONNREFUSED/i,
-    message: "Servidor de transmissão offline. Rode «npm run worker:ig-live» em outro terminal.",
+    message:
+      "Worker RTMP offline. Local: npm run worker:ig-live. No Lovable: hospede apps/ig-live-worker e defina WORKER_URL + WORKER_API_SECRET nos secrets.",
   },
   {
     test: /chave ausente/i,

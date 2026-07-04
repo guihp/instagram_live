@@ -1,68 +1,81 @@
 # AGENTS.md — instruções para o agente Lovable
 
-Este repositório é um **template remixável**. Quem remixar deve usar **credenciais próprias** — nunca as do autor original.
+Este repositório é um **template remixável** de **Instagram Live admin**. Quem remixar usa **credenciais próprias**.
+
+## Leia primeiro
+
+**`LOVABLE.md`** — checklist completo, o que roda no Lovable vs fora, troubleshooting.
 
 ## Regra principal
 
-Se o usuário remixou ou importou este projeto e pediu para "deixar funcionando", **siga SETUP.md passo a passo** antes de alterar código. Não invente URLs, chaves ou project refs do Supabase.
+Se pedirem "deixar funcionando", **siga LOVABLE.md e SETUP.md** antes de alterar código. Não invente project refs do Supabase.
 
-## Variáveis obrigatórias
+## Arquitetura Lovable
 
-Configure em **Lovable → Cloud → Secrets** (produção/preview) ou em `.env` (local):
+| Componente | Onde | Notas |
+|------------|------|-------|
+| Admin UI | Lovable | TanStack Start, `/admin/instagram-live` |
+| Supabase | Externo | Auth, DB, Storage |
+| Worker RTMP | **Fora do Lovable** | `apps/ig-live-worker` — ffmpeg não roda no Lovable |
+
+O painel **funciona sem worker** (login, CRUD, upload). **Transmitir** exige worker online + `WORKER_URL`.
+
+## Variáveis obrigatórias (Lovable Cloud → Secrets)
 
 | Variável | Onde obter |
 |----------|------------|
 | `VITE_SUPABASE_URL` | Supabase → Settings → API → Project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role (**secret**) |
-| `WORKER_API_SECRET` | Defina um segredo forte — mesmo valor no worker e no admin |
+| `WORKER_API_SECRET` | Segredo forte — **mesmo valor** no worker |
+| `WORKER_URL` | URL pública do worker deployado (obrigatório para stream em produção) |
 
-Opcionais: `VITE_APP_URL`, `WORKER_URL` (padrão `http://localhost:8787`).
+Opcional: `VITE_APP_URL`.
 
-**Nunca** commite secrets. **Nunca** hardcode project ref do Supabase no código — derive de `VITE_SUPABASE_URL`.
+**Nunca** commite secrets. **Nunca** hardcode project ref — derive de `VITE_SUPABASE_URL`.
 
 ## Banco de dados
 
-1. Criar **novo** projeto Supabase (não reutilizar o do autor).
-2. Rodar a migration em `supabase/migrations/`:
-   - SQL Editor: colar e executar, ou
-   - CLI: `supabase link` + `supabase db push`
-3. Criar usuário admin: Supabase → Authentication → Users → Add user (email/senha para `/login`).
+1. Projeto Supabase **novo**
+2. Rodar `supabase/migrations/20260704120000_initial_schema.sql`
+3. Usuário admin: Authentication → Users → Add user
 
-## Arquitetura (não alterar sem pedido)
+## Diagnóstico no app
 
-- **Stack:** TanStack Start + Vite + Nitro + Supabase
-- **Admin:** server functions em `src/lib/api/ig-live.functions.ts` usam `createServiceClient()` (service role)
-- **Worker:** `apps/ig-live-worker/` — ffmpeg RTMP para Instagram Live Producer
-- **Auth admin:** Supabase Auth no client (`/login`); guard em `AdminAuthGuard`
-- **Bucket:** `ig-broadcasts-video` (vídeos verticais para transmissão)
+- `SetupChecklist` no layout `/admin` — mostra o que falta (secrets, migration, admin, worker)
+- Server function `fetchSetupStatus` em `src/lib/api/setup.functions.ts`
+- Erros de config → `getConfigErrorHint()` em `src/lib/env-check.server.ts`
+
+Use essas mensagens para orientar o usuário — **não** crie `/setup` no frontend.
 
 ## Quando o usuário pedir setup
 
-**Não** crie tela `/setup` nem formulário de secrets no frontend. Secrets vão só em **Lovable → Cloud → Secrets** (ou `.env` local).
+Checklist curto:
 
-Responda com checklist curto e ofereça executar cada passo:
+1. Supabase novo criado?
+2. Migration rodou?
+3. 4–5 secrets no Lovable (Test **e** Live)?
+4. Usuário admin criado?
+5. Worker deployado + `WORKER_URL`?
+6. Publish → Update feito?
 
-1. Criou projeto Supabase novo?
-2. Rodou a migration (`supabase/migrations/`)?
-3. Configurou os 4 secrets no Lovable Cloud?
-4. Criou usuário admin em Authentication → Users?
-5. Worker RTMP configurado e rodando (`apps/ig-live-worker`)?
-
-O prompt pronto para colar no chat Lovable está em **`.env.example`** (final do arquivo). Guia completo: **SETUP.md**.
-
-Se faltar migration ou secret, o app falha com mensagens em português nos handlers — use-as para diagnosticar.
+Prompt pronto em **`.env.example`** e **`LOVABLE.md`**.
 
 ## O que NÃO fazer
 
 - Não conectar ao Supabase do autor
-- Não remover RLS ou expor `SUPABASE_SERVICE_ROLE_KEY` no frontend
-- Não pular a migration — schema em `supabase/migrations/20260704120000_initial_schema.sql`
-- Não substituir server functions por Edge Functions sem pedido explícito
+- Não expor `SUPABASE_SERVICE_ROLE_KEY` no frontend
+- Não tentar rodar ffmpeg/worker dentro do Lovable
+- Não criar formulário de secrets no app
+- Não pular migration
 
-## Referências no repo
+## Stack
 
-- `SETUP.md` — guia completo para humanos
-- `.env.example` — lista de variáveis (placeholders)
-- `apps/ig-live-worker/README.md` — worker RTMP
-- `PRODUCT.md` / `DESIGN.md` — produto e design system
+TanStack Start + Vite + Nitro + Supabase. Server functions: `src/lib/api/ig-live.functions.ts`. Bucket: `ig-broadcasts-video`.
+
+## Referências
+
+- `LOVABLE.md` — deploy Lovable (prioridade)
+- `SETUP.md` — guia humano
+- `.env.example` — variáveis
+- `apps/ig-live-worker/README.md` — worker

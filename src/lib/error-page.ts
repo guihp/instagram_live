@@ -1,9 +1,9 @@
-import { CONFIG_ERROR_HINT } from "./env-check.server";
+import { getConfigErrorHint } from "./env-check.server";
 
 export function renderErrorPage(options?: { setup?: boolean }): string {
   const title = options?.setup ? "Ambiente não configurado" : "This page didn't load";
   const message = options?.setup
-    ? CONFIG_ERROR_HINT
+    ? getConfigErrorHint().replace(/\n/g, "<br />")
     : "Something went wrong on our end. You can try refreshing or head back home.";
 
   return `<!doctype html>

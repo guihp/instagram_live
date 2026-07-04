@@ -1,16 +1,41 @@
-import { getEnvVar } from "./load-env.server";
+import {
+  getMissingEnvKeys,
+  isRequiredEnvConfigured,
+  getSetupStatus,
+  formatSetupHint,
+} from "./setup-status.server";
 
-/** Verifica apenas presença das variáveis — sem testar banco (rápido para error handlers). */
-export function isRequiredEnvConfigured(): boolean {
-  const keys = [
-    "VITE_SUPABASE_URL",
-    "VITE_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "WORKER_API_SECRET",
-  ] as const;
-  return keys.every((key) => Boolean(getEnvVar(key)));
+export { getMissingEnvKeys, isRequiredEnvConfigured, getSetupStatus, formatSetupHint };
+
+/** Mensagem síncrona para error boundaries (sem checagem de banco/worker). */
+export function getConfigErrorHint(): string {
+  const missing = getMissingEnvKeys();
+
+  const lines = [
+    "Ambiente incompleto para Instagram Live.",
+    "",
+    "No Lovable: Cloud → Secrets (Test e Live), depois Publish → Update.",
+    "Guia completo: LOVABLE.md e SETUP.md.",
+    "",
+  ];
+
+  if (missing.length > 0) {
+    lines.push("Secrets faltando:");
+    for (const key of missing) {
+      lines.push(`• ${key}`);
+    }
+    lines.push("");
+  }
+
+  lines.push(
+    "Também confira no Supabase:",
+    "• Migration: supabase/migrations/20260704120000_initial_schema.sql",
+    "• Usuário admin: Authentication → Users → Add user",
+    "",
+    "Para transmitir: worker RTMP (apps/ig-live-worker) + WORKER_URL público no Lovable.",
+  );
+
+  return lines.join("\n");
 }
 
-export const CONFIG_ERROR_HINT =
-  "No Lovable, o preview e o site publicado podem usar secrets diferentes. " +
-  "Confira Cloud → Secrets no ambiente Live, adicione os secrets, rode a migration no Supabase, crie o usuário em Authentication → Users e clique Publish → Update. Veja SETUP.md.";
+export const CONFIG_ERROR_HINT = getConfigErrorHint();

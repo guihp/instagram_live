@@ -1,6 +1,8 @@
-# Setup — remixar este projeto
+# Setup — Instagram Live
 
-Use este guia ao **remixar no Lovable** ou **clonar do GitHub**. Você precisa do **seu** Supabase — os dados do autor **não** vêm junto.
+Use ao **remixar no Lovable** ou clonar do GitHub.
+
+> **Deploy Lovable:** leia **`LOVABLE.md`** primeiro — checklist, secrets Test/Live, worker externo.
 
 ## Checklist rápido
 
@@ -71,7 +73,7 @@ npm run dev
 | `VITE_SUPABASE_ANON_KEY` | Sim | Chave anon (client) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Service role (servidor) |
 | `WORKER_API_SECRET` | Sim | Segredo compartilhado admin ↔ worker |
-| `WORKER_URL` | Não | URL do worker (padrão `http://localhost:8787`) |
+| `WORKER_URL` | Sim (produção) | URL pública do worker — padrão local `http://localhost:8787` |
 | `VITE_APP_URL` | Não | URL pública do app |
 
 ---

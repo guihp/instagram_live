@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { themeInitScript } from "@/components/admin/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
-import { CONFIG_ERROR_HINT } from "@/lib/env-check.server";
+import { getConfigErrorHint } from "@/lib/env-check.server";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -52,7 +52,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-lg text-center">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">Ambiente não configurado</h1>
-          <p className="mt-3 text-left text-sm text-muted-foreground">{CONFIG_ERROR_HINT}</p>
+          <p className="mt-3 whitespace-pre-line text-left text-sm text-muted-foreground">
+            {getConfigErrorHint()}
+          </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <button
               onClick={() => {

@@ -4,16 +4,20 @@ import { toast } from "sonner";
 
 import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
 import { AdminSidebar, navItems } from "@/components/admin/AdminSidebar";
+import { SetupChecklist } from "@/components/admin/SetupChecklist";
 import { Button } from "@/components/ui/button";
+import { fetchSetupStatus } from "@/lib/api/setup.functions";
 import { supabase } from "@/lib/supabase/client";
 import dojoLogo from "@/assets/dojo-logo-branca.png";
 
 export const Route = createFileRoute("/admin")({
+  loader: () => fetchSetupStatus(),
   component: AdminLayout,
 });
 
 function AdminLayout() {
   const navigate = useNavigate();
+  const setup = Route.useLoaderData();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -53,6 +57,11 @@ function AdminLayout() {
 
           <main className="flex-1 overflow-auto bg-[#0F1114]">
             <div className="mx-auto w-full max-w-[1100px] px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+              <SetupChecklist
+                items={setup.items}
+                ready={setup.ready}
+                canStream={setup.canStream}
+              />
               <Outlet />
             </div>
           </main>
