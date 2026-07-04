@@ -1,4 +1,4 @@
-import { Link, Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,23 +14,12 @@ export const Route = createFileRoute("/admin")({
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const isLandingPreviewEmbed = useRouterState({
-    select: (s) => /\/webinars\/landing-preview\//.test(s.location.pathname),
-  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Sessão encerrada");
     navigate({ to: "/login" });
   };
-
-  if (isLandingPreviewEmbed) {
-    return (
-      <AdminAuthGuard>
-        <Outlet />
-      </AdminAuthGuard>
-    );
-  }
 
   return (
     <AdminAuthGuard>

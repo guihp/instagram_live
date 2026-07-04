@@ -14,7 +14,7 @@ Este projeto usa a skill **Impeccable** em `.cursor/skills/impeccable/`.
 
 1. Ler `PRODUCT.md` (estratégia) e `DESIGN.md` (tokens e componentes).
 2. Para tarefas de design explícitas, o usuário pode invocar `/impeccable <comando>` (ex.: `audit`, `polish`, `critique`, `layout`).
-3. Superfície **brand** (landing `/webinar/:slug` register/waiting) → seguir register brand em `PRODUCT.md`. **Product** → admin, login, live room.
+3. Superfície **product** → admin e login (`/admin/*`, `/login`).
 
 ## Stack UI
 

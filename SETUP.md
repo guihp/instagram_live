@@ -1,15 +1,14 @@
 # Setup — remixar este projeto
 
-Use este guia ao **remixar no Lovable** ou **clonar do GitHub**. Você precisa do **seu** Supabase e **sua** chave OpenRouter — os dados do autor **não** vêm junto.
+Use este guia ao **remixar no Lovable** ou **clonar do GitHub**. Você precisa do **seu** Supabase — os dados do autor **não** vêm junto.
 
 ## Checklist rápido
 
 - [ ] Criar projeto Supabase novo
-- [ ] Rodar migrations SQL
+- [ ] Rodar migration SQL
 - [ ] Configurar secrets (4 variáveis obrigatórias)
 - [ ] Criar usuário admin no Supabase Auth
-- [ ] (Opcional) Conta OpenRouter com créditos
-- [ ] (Opcional) Supabase Pro + limite de upload para vídeos grandes
+- [ ] Configurar e rodar o worker RTMP (`apps/ig-live-worker`)
 
 ---
 
@@ -23,26 +22,16 @@ Use este guia ao **remixar no Lovable** ou **clonar do GitHub**. Você precisa d
 
 ---
 
-## 2. Banco de dados — migrations
+## 2. Banco de dados — migration
 
-O schema está em `supabase/migrations/`. Rode **todos** os arquivos, **na ordem do nome**:
+O schema está em `supabase/migrations/20260704120000_initial_schema.sql`.
 
-| Arquivo | O que faz |
-|---------|-----------|
-| `20260530110000_initial_schema.sql` | Tabelas, RLS, buckets de storage |
-| `20260530120000_webinar_videos_bucket_limit.sql` | Limite do bucket de vídeos |
-| `20260530130000_webinar_assets_mime_types.sql` | Tipos MIME de assets |
-| `20260530140000_landing_footer.sql` | Coluna `landing_footer` |
-| `20260530150000_trigger_appear_mode.sql` | Modo de aparição dos gatilhos |
-| `20260530160000_webinar_live_messages.sql` | Chat ao vivo |
-| `20260530170000_ai_assistant_name.sql` | Nome do assistente IA |
-| `20260601120000_landing_templates.sql` | Templates de landing |
-| `20260602130000_landing_logo.sql` | Logo customizada na landing |
+Cria as tabelas `ig_broadcasts` e `ig_broadcast_events`, RLS e o bucket `ig-broadcasts-video`.
 
 ### Opção A — SQL Editor (mais simples)
 
 1. Supabase → **SQL Editor**
-2. Para cada arquivo acima: abra o `.sql`, copie, cole e **Run**
+2. Abra o arquivo `.sql`, copie, cole e **Run**
 
 ### Opção B — Supabase CLI
 
@@ -65,7 +54,7 @@ supabase db push
 VITE_SUPABASE_URL=https://SEU_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-OPENROUTER_API_KEY=sk-or-...
+WORKER_API_SECRET=seu_segredo_forte
 ```
 
 ### Localmente
@@ -79,84 +68,70 @@ npm run dev
 | Variável | Obrigatória | Descrição |
 |----------|-------------|-----------|
 | `VITE_SUPABASE_URL` | Sim | URL do projeto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Sim | Chave anon (pública no client) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Service role — **só servidor** |
-| `OPENROUTER_API_KEY` | Sim | IA (transcrição + chat ao vivo) |
-| `VITE_APP_URL` | Não | URL pública do app (referer OpenRouter) |
-| `SUPABASE_STORAGE_MAX_BYTES` | Não | Limite de upload (padrão 48 MB) |
+| `VITE_SUPABASE_ANON_KEY` | Sim | Chave anon (client) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Service role (servidor) |
+| `WORKER_API_SECRET` | Sim | Segredo compartilhado admin ↔ worker |
+| `WORKER_URL` | Não | URL do worker (padrão `http://localhost:8787`) |
+| `VITE_APP_URL` | Não | URL pública do app |
 
 ---
 
 ## 4. Usuário admin
 
 1. Supabase → **Authentication → Users**
-2. **Add user** → email + senha
-3. Acesse `/login` no app e entre com essas credenciais
-4. Painel admin em `/admin`
-
-> Qualquer usuário autenticado no Supabase Auth tem acesso ao admin. Para produção, restrinja criação de usuários no dashboard.
+2. **Add user** com email e senha
+3. Use essas credenciais em `/login`
 
 ---
 
-## 5. OpenRouter
+## 5. Worker RTMP (Instagram Live)
 
-1. Crie conta em [openrouter.ai](https://openrouter.ai)
-2. Gere API key em [openrouter.ai/keys](https://openrouter.ai/keys)
-3. Adicione créditos (transcrição de vídeo e respostas do chat consomem tokens)
-4. Coloque a key em `OPENROUTER_API_KEY`
+O streaming para Instagram é feito pelo worker em `apps/ig-live-worker/`.
 
-Sem essa key: upload e admin funcionam; transcrição automática e respostas IA no chat **não**.
+Guia completo: **`apps/ig-live-worker/README.md`**
 
----
+Resumo:
 
-## 6. Upload de vídeos (opcional)
+```bash
+# Instalar dependências do worker
+npm run worker:ig-live:install
 
-No plano **Free**, o Supabase limita uploads globais a ~50 MB. Vídeos longos de webinar podem exigir:
+# ffmpeg no PATH (macOS: brew install ffmpeg)
+# Configurar .env do worker com SUPABASE_* e WORKER_API_SECRET
 
-1. Upgrade para **Supabase Pro**
-2. **Storage → Settings → Global file size limit** — aumente (ex.: 500 MB)
-3. Defina `SUPABASE_STORAGE_MAX_BYTES=524288000` nos secrets
-4. Reinicie o dev server / republique no Lovable
+npm run worker:ig-live
+```
 
-O admin mostra o link correto do **seu** dashboard (derivado de `VITE_SUPABASE_URL`).
+No admin (`/admin/instagram-live`), crie uma transmissão, envie o vídeo vertical, cole a URL RTMP do Instagram Live Producer e inicie o stream.
 
 ---
 
-## 7. Remix no Lovable
+## 6. Testar
 
-1. **Remix** o projeto ou conecte o repo GitHub
-2. Siga os passos 1–4 deste guia (Supabase, migrations, secrets, usuário admin)
-3. Cole no chat do Lovable o bloco **"LOVABLE — PROMPT PARA COLAR NO CHAT"** no final de `.env.example`
-4. **Não** use tela de setup no app — secrets só em **Cloud → Secrets**
-5. Habilite **Enable public remixing** em Project settings se quiser que outros remixem a partir do seu fork
-
-O agente Lovable lê `AGENTS.md`, `SETUP.md` e `.env.example` automaticamente.
+1. `npm run dev` (admin)
+2. `npm run worker:ig-live` (worker, em outro terminal)
+3. Acesse `/login` → `/admin/instagram-live`
+4. Crie transmissão, faça upload, configure RTMP e teste
 
 ---
 
-## Solução de problemas
+## Troubleshooting
 
-| Sintoma | Provável causa |
-|---------|----------------|
-| "VITE_SUPABASE_URL é obrigatório" | Secrets não configurados em Cloud → Secrets ou preview não republicado |
-| Redirecionamento / erro ao abrir o app | Falta secret ou migration — veja `.env.example` e SETUP.md |
-| "Webinar não encontrado" | Migration não rodou ou webinar não publicado |
-| Erro 42P01 (tabela inexistente) | Migrations incompletas |
-| Upload falha com 413 | Limite global do Storage — veja passo 6 |
-| IA não responde no chat | `OPENROUTER_API_KEY` ausente ou sem créditos |
+| Erro | Causa provável |
+|------|----------------|
+| "Ambiente não configurado" | Secrets faltando no Lovable ou `.env` |
+| Tabela `ig_broadcasts` não existe | Migration não rodou |
+| Worker não responde | `WORKER_URL` errado ou worker parado |
+| Upload falha | Bucket `ig-broadcasts-video` não criado (rode migration) |
 | Login falha | Usuário não criado em Authentication → Users |
 
 ---
 
-## Estrutura relevante
+## Estrutura do código
 
 ```
-supabase/migrations/     ← schema do banco
-src/lib/api/             ← server functions (Supabase service role)
-src/lib/webinar/         ← lógica de webinar, IA, playback
-src/routes/login.tsx     ← login admin
-src/routes/admin/        ← painel
-src/routes/webinar/      ← landing + live (público)
-.env.example             ← template de variáveis
-AGENTS.md                ← instruções para o agente Lovable
+src/routes/admin/instagram-live/  ← painel admin
+src/lib/api/ig-live.functions.ts  ← server functions
+apps/ig-live-worker/              ← worker ffmpeg RTMP
+supabase/migrations/              ← schema IG
 ```

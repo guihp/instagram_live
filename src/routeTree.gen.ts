@@ -13,12 +13,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as WebinarSlugRouteImport } from './routes/webinar/$slug'
-import { Route as AdminWebinarsIndexRouteImport } from './routes/admin/webinars/index'
-import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
-import { Route as AdminWebinarsNewRouteImport } from './routes/admin/webinars/new'
-import { Route as AdminWebinarsIdRouteImport } from './routes/admin/webinars/$id'
-import { Route as AdminWebinarsLandingPreviewIdRouteImport } from './routes/admin/webinars/landing-preview.$id'
+import { Route as AdminInstagramLiveIndexRouteImport } from './routes/admin/instagram-live/index'
+import { Route as AdminInstagramLiveNewRouteImport } from './routes/admin/instagram-live/new'
+import { Route as AdminInstagramLiveIdRouteImport } from './routes/admin/instagram-live/$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -40,73 +37,48 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const WebinarSlugRoute = WebinarSlugRouteImport.update({
-  id: '/webinar/$slug',
-  path: '/webinar/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminWebinarsIndexRoute = AdminWebinarsIndexRouteImport.update({
-  id: '/webinars/',
-  path: '/webinars/',
+const AdminInstagramLiveIndexRoute = AdminInstagramLiveIndexRouteImport.update({
+  id: '/instagram-live/',
+  path: '/instagram-live/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminLeadsIndexRoute = AdminLeadsIndexRouteImport.update({
-  id: '/leads/',
-  path: '/leads/',
+const AdminInstagramLiveNewRoute = AdminInstagramLiveNewRouteImport.update({
+  id: '/instagram-live/new',
+  path: '/instagram-live/new',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminWebinarsNewRoute = AdminWebinarsNewRouteImport.update({
-  id: '/webinars/new',
-  path: '/webinars/new',
+const AdminInstagramLiveIdRoute = AdminInstagramLiveIdRouteImport.update({
+  id: '/instagram-live/$id',
+  path: '/instagram-live/$id',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminWebinarsIdRoute = AdminWebinarsIdRouteImport.update({
-  id: '/webinars/$id',
-  path: '/webinars/$id',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminWebinarsLandingPreviewIdRoute =
-  AdminWebinarsLandingPreviewIdRouteImport.update({
-    id: '/webinars/landing-preview/$id',
-    path: '/webinars/landing-preview/$id',
-    getParentRoute: () => AdminRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
-  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
-  '/admin/webinars/new': typeof AdminWebinarsNewRoute
-  '/admin/leads/': typeof AdminLeadsIndexRoute
-  '/admin/webinars/': typeof AdminWebinarsIndexRoute
-  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
+  '/admin/instagram-live/$id': typeof AdminInstagramLiveIdRoute
+  '/admin/instagram-live/new': typeof AdminInstagramLiveNewRoute
+  '/admin/instagram-live/': typeof AdminInstagramLiveIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/webinar/$slug': typeof WebinarSlugRoute
   '/admin': typeof AdminIndexRoute
-  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
-  '/admin/webinars/new': typeof AdminWebinarsNewRoute
-  '/admin/leads': typeof AdminLeadsIndexRoute
-  '/admin/webinars': typeof AdminWebinarsIndexRoute
-  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
+  '/admin/instagram-live/$id': typeof AdminInstagramLiveIdRoute
+  '/admin/instagram-live/new': typeof AdminInstagramLiveNewRoute
+  '/admin/instagram-live': typeof AdminInstagramLiveIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/webinar/$slug': typeof WebinarSlugRoute
   '/admin/': typeof AdminIndexRoute
-  '/admin/webinars/$id': typeof AdminWebinarsIdRoute
-  '/admin/webinars/new': typeof AdminWebinarsNewRoute
-  '/admin/leads/': typeof AdminLeadsIndexRoute
-  '/admin/webinars/': typeof AdminWebinarsIndexRoute
-  '/admin/webinars/landing-preview/$id': typeof AdminWebinarsLandingPreviewIdRoute
+  '/admin/instagram-live/$id': typeof AdminInstagramLiveIdRoute
+  '/admin/instagram-live/new': typeof AdminInstagramLiveNewRoute
+  '/admin/instagram-live/': typeof AdminInstagramLiveIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,43 +86,33 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
-    | '/webinar/$slug'
     | '/admin/'
-    | '/admin/webinars/$id'
-    | '/admin/webinars/new'
-    | '/admin/leads/'
-    | '/admin/webinars/'
-    | '/admin/webinars/landing-preview/$id'
+    | '/admin/instagram-live/$id'
+    | '/admin/instagram-live/new'
+    | '/admin/instagram-live/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
-    | '/webinar/$slug'
     | '/admin'
-    | '/admin/webinars/$id'
-    | '/admin/webinars/new'
-    | '/admin/leads'
-    | '/admin/webinars'
-    | '/admin/webinars/landing-preview/$id'
+    | '/admin/instagram-live/$id'
+    | '/admin/instagram-live/new'
+    | '/admin/instagram-live'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/login'
-    | '/webinar/$slug'
     | '/admin/'
-    | '/admin/webinars/$id'
-    | '/admin/webinars/new'
-    | '/admin/leads/'
-    | '/admin/webinars/'
-    | '/admin/webinars/landing-preview/$id'
+    | '/admin/instagram-live/$id'
+    | '/admin/instagram-live/new'
+    | '/admin/instagram-live/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
-  WebinarSlugRoute: typeof WebinarSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,46 +145,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/webinar/$slug': {
-      id: '/webinar/$slug'
-      path: '/webinar/$slug'
-      fullPath: '/webinar/$slug'
-      preLoaderRoute: typeof WebinarSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/webinars/': {
-      id: '/admin/webinars/'
-      path: '/webinars'
-      fullPath: '/admin/webinars/'
-      preLoaderRoute: typeof AdminWebinarsIndexRouteImport
+    '/admin/instagram-live/': {
+      id: '/admin/instagram-live/'
+      path: '/instagram-live'
+      fullPath: '/admin/instagram-live/'
+      preLoaderRoute: typeof AdminInstagramLiveIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/leads/': {
-      id: '/admin/leads/'
-      path: '/leads'
-      fullPath: '/admin/leads/'
-      preLoaderRoute: typeof AdminLeadsIndexRouteImport
+    '/admin/instagram-live/new': {
+      id: '/admin/instagram-live/new'
+      path: '/instagram-live/new'
+      fullPath: '/admin/instagram-live/new'
+      preLoaderRoute: typeof AdminInstagramLiveNewRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/webinars/new': {
-      id: '/admin/webinars/new'
-      path: '/webinars/new'
-      fullPath: '/admin/webinars/new'
-      preLoaderRoute: typeof AdminWebinarsNewRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/webinars/$id': {
-      id: '/admin/webinars/$id'
-      path: '/webinars/$id'
-      fullPath: '/admin/webinars/$id'
-      preLoaderRoute: typeof AdminWebinarsIdRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/webinars/landing-preview/$id': {
-      id: '/admin/webinars/landing-preview/$id'
-      path: '/webinars/landing-preview/$id'
-      fullPath: '/admin/webinars/landing-preview/$id'
-      preLoaderRoute: typeof AdminWebinarsLandingPreviewIdRouteImport
+    '/admin/instagram-live/$id': {
+      id: '/admin/instagram-live/$id'
+      path: '/instagram-live/$id'
+      fullPath: '/admin/instagram-live/$id'
+      preLoaderRoute: typeof AdminInstagramLiveIdRouteImport
       parentRoute: typeof AdminRoute
     }
   }
@@ -230,20 +171,16 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
-  AdminWebinarsIdRoute: typeof AdminWebinarsIdRoute
-  AdminWebinarsNewRoute: typeof AdminWebinarsNewRoute
-  AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
-  AdminWebinarsIndexRoute: typeof AdminWebinarsIndexRoute
-  AdminWebinarsLandingPreviewIdRoute: typeof AdminWebinarsLandingPreviewIdRoute
+  AdminInstagramLiveIdRoute: typeof AdminInstagramLiveIdRoute
+  AdminInstagramLiveNewRoute: typeof AdminInstagramLiveNewRoute
+  AdminInstagramLiveIndexRoute: typeof AdminInstagramLiveIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
-  AdminWebinarsIdRoute: AdminWebinarsIdRoute,
-  AdminWebinarsNewRoute: AdminWebinarsNewRoute,
-  AdminLeadsIndexRoute: AdminLeadsIndexRoute,
-  AdminWebinarsIndexRoute: AdminWebinarsIndexRoute,
-  AdminWebinarsLandingPreviewIdRoute: AdminWebinarsLandingPreviewIdRoute,
+  AdminInstagramLiveIdRoute: AdminInstagramLiveIdRoute,
+  AdminInstagramLiveNewRoute: AdminInstagramLiveNewRoute,
+  AdminInstagramLiveIndexRoute: AdminInstagramLiveIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -252,7 +189,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
-  WebinarSlugRoute: WebinarSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

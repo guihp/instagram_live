@@ -104,14 +104,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Webinar surfaces */
-  --color-webinar-ink: var(--webinar-ink);
-  --color-webinar-ink-muted: var(--webinar-ink-muted);
-  --color-webinar-surface: var(--webinar-surface);
-  --color-webinar-surface-alt: var(--webinar-surface-alt);
-  --color-webinar-accent: var(--webinar-accent);
-  --color-webinar-accent-soft: var(--webinar-accent-soft);
-
   --font-sans: "Matter", system-ui, sans-serif;
   --font-display: "Matter", system-ui, sans-serif;
   --font-body: "Matter", system-ui, sans-serif;
@@ -163,12 +155,6 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.06);
   --sidebar-ring: rgba(115, 165, 182, 0.4);
-  --webinar-ink: #000000;
-  --webinar-ink-muted: #b0b3bd;
-  --webinar-surface: #1f2127;
-  --webinar-surface-alt: #050708;
-  --webinar-accent: #73a5b6;
-  --webinar-accent-soft: rgba(115, 165, 182, 0.15);
 
   /* Scrollbars — tema Dojo (teal sobre fundo escuro) */
   --scrollbar-size: 8px;
@@ -376,20 +362,6 @@
     background-clip: padding-box;
   }
 
-  .webinar-landing {
-    font-family: var(--font-body);
-  }
-
-  .webinar-landing h1,
-  .webinar-landing h2,
-  .webinar-landing h3 {
-    font-family: var(--font-display);
-    text-wrap: balance;
-  }
-
-  .webinar-landing p {
-    text-wrap: pretty;
-  }
 }
 
 @layer components {
@@ -627,27 +599,7 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .webinar-reveal {
-    animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .webinar-reveal-delay-1 {
-    animation-delay: 0.08s;
-  }
-
-  .webinar-reveal-delay-2 {
-    animation-delay: 0.16s;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .webinar-reveal,
-  .webinar-reveal-delay-1,
-  .webinar-reveal-delay-2 {
-    animation: none;
-  }
-
   *::-webkit-scrollbar-thumb {
     transition: none;
   }

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { MessageCircle, MousePointerClick, UserPlus, Video, Zap } from "lucide-react";
+import { Calendar, Radio, Upload, Zap } from "lucide-react";
 
 import dojoLogo from "@/assets/dojo-logo-branca.png";
 import { cn } from "@/lib/utils";
@@ -14,39 +14,32 @@ interface FeatureCard {
 
 const features: FeatureCard[] = [
   {
-    icon: Video,
-    label: "Webinars",
-    detail: "12 ativos",
+    icon: Radio,
+    label: "Instagram Live",
+    detail: "RTMP",
     className: "left-[8%] top-[18%]",
     delay: "dojo-stagger-4",
   },
   {
-    icon: UserPlus,
-    label: "Leads",
-    detail: "2.4k capturados",
+    icon: Upload,
+    label: "Vídeo",
+    detail: "Pré-gravado",
     className: "right-[6%] top-[22%]",
     delay: "dojo-stagger-5",
   },
   {
-    icon: MessageCircle,
-    label: "Chat IA",
-    detail: "8 online",
+    icon: Calendar,
+    label: "Agendamento",
+    detail: "Automático",
     className: "left-[12%] bottom-[28%]",
     delay: "dojo-stagger-6",
   },
   {
-    icon: MousePointerClick,
-    label: "Gatilhos",
-    detail: "CTR alto",
+    icon: Zap,
+    label: "Worker",
+    detail: "ffmpeg",
     className: "right-[10%] bottom-[32%]",
     delay: "dojo-stagger-5",
-  },
-  {
-    icon: Zap,
-    label: "Live",
-    detail: "Ao vivo",
-    className: "left-1/2 bottom-[12%] -translate-x-1/2",
-    delay: "dojo-stagger-6",
   },
 ];
 
@@ -58,7 +51,6 @@ export function AuthDecorPanel({ className }: { className?: string }) {
         className,
       )}
     >
-      {/* Star glow */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div
           className="absolute h-[700px] w-[160px] rounded-full bg-brand-teal/14 blur-3xl"
@@ -69,10 +61,7 @@ export function AuthDecorPanel({ className }: { className?: string }) {
           aria-hidden
         />
         <div className="absolute size-[300px] rounded-full bg-brand-teal/8 blur-3xl" aria-hidden />
-        <div
-          className="animate-star-rotate absolute size-[500px]"
-          aria-hidden
-        >
+        <div className="animate-star-rotate absolute size-[500px]" aria-hidden>
           <div className="absolute left-1/2 top-1/2 h-[60px] w-[500px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-full bg-brand-teal/5 blur-xl" />
           <div className="absolute left-1/2 top-1/2 h-[60px] w-[500px] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-full bg-brand-teal/5 blur-xl" />
         </div>
@@ -83,17 +72,15 @@ export function AuthDecorPanel({ className }: { className?: string }) {
         />
       </div>
 
-      {/* Central card */}
       <div className="relative z-10 flex size-52 animate-fade-up items-center justify-center rounded-3xl dojo-glass-card-central sm:size-60">
         <div className="flex flex-col items-center gap-4">
           <img src={dojoLogo} alt="DOJO" className="h-8 w-auto opacity-90" />
           <span className="text-[0.55rem] font-medium uppercase tracking-[0.35em] text-white/40">
-            Webinars
+            Instagram Live
           </span>
         </div>
       </div>
 
-      {/* Floating feature cards */}
       {features.map((feature) => (
         <div
           key={feature.label}
@@ -116,7 +103,7 @@ export function AuthDecorPanel({ className }: { className?: string }) {
       ))}
 
       <p className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-[0.55rem] uppercase tracking-[0.35em] text-white/20">
-        Webinars · Leads · Live · Gatilhos
+        Instagram Live · RTMP · Agendamento
       </p>
     </div>
   );

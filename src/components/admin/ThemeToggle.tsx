@@ -57,5 +57,5 @@ export function ThemeToggle({ className, showLabel = true }: ThemeToggleProps) {
 
 /** Evita flash de tema errado no primeiro paint (chamar no shell HTML). */
 export function themeInitScript() {
-  return `(function(){try{var t=localStorage.getItem('webinar-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;
+  return `(function(){try{var t=localStorage.getItem('app-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`;
 }

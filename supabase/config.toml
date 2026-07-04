@@ -1,7 +1,7 @@
 # Configuração local do Supabase CLI (supabase start / db push).
 # O remixer usa o próprio projeto remoto — veja SETUP.md.
 
-project_id = "webinar-platform"
+project_id = "instagram-live"
 
 [api]
 enabled = true

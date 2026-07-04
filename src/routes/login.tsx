@@ -57,7 +57,7 @@ function LoginPage() {
           <p className="mb-6 mt-2 animate-fade-up text-[0.85rem] text-[#555555] opacity-0 dojo-stagger-3">
             Acesse o painel e gerencie seus{" "}
             <RotatingText
-              texts={["webinars", "leads", "gatilhos", "lives"]}
+              texts={["streams", "RTMP", "agendamentos", "lives"]}
               interval={2200}
               className="font-medium text-brand-teal/80"
             />

@@ -1,4 +1,4 @@
-const STORAGE_KEY = "webinar-theme";
+const STORAGE_KEY = "app-theme";
 
 export type Theme = "light" | "dark";
 

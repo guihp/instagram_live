@@ -41,7 +41,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   const isConfigError =
-    /VITE_SUPABASE|SUPABASE_SERVICE_ROLE|OPENROUTER|obrigatóri/i.test(error.message ?? "");
+    /VITE_SUPABASE|SUPABASE_SERVICE_ROLE|WORKER_API_SECRET|obrigatóri/i.test(error.message ?? "");
 
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
@@ -111,16 +111,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Webinar Platform" },
-      { name: "description", content: "Plataforma de webinars ao vivo" },
+      { title: "Instagram Live" },
+      { name: "description", content: "Transmissão RTMP para Instagram Live" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Webinar Platform" },
-      { property: "og:description", content: "Plataforma de webinars ao vivo" },
+      { property: "og:title", content: "Instagram Live" },
+      { property: "og:description", content: "Transmissão RTMP para Instagram Live" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Webinar Platform" },
-      { name: "twitter:description", content: "Plataforma de webinars ao vivo" },
+      { name: "twitter:title", content: "Instagram Live" },
+      { name: "twitter:description", content: "Transmissão RTMP para Instagram Live" },
       {
         property: "og:image",
         content:

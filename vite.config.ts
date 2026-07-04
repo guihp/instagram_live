@@ -13,6 +13,6 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    envPrefix: ["VITE_", "OPENROUTER_", "SUPABASE_"],
+    envPrefix: ["VITE_", "WORKER_", "SUPABASE_"],
   },
 });

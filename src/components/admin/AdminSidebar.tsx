@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, LogOut, Users, Video } from "lucide-react";
+import { LogOut, Radio } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,7 @@ import dojoLogo from "@/assets/dojo-logo-branca.png";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/webinars", label: "Webinars", icon: Video, exact: false },
-  { to: "/admin/leads", label: "Leads", icon: Users, exact: false },
+  { to: "/admin/instagram-live", label: "Instagram Live", icon: Radio, exact: false },
 ] as const;
 
 interface AdminSidebarProps {
@@ -39,11 +37,10 @@ export function AdminSidebar({ onLogout }: AdminSidebarProps) {
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pt-2" aria-label="Menu principal">
         {navItems.map((item) => {
-          const active = item.exact
-            ? pathname === item.to || pathname === `${item.to}/`
-            : pathname === item.to ||
-              pathname.startsWith(`${item.to}/`) ||
-              pathname.startsWith(item.to);
+          const active =
+            pathname === item.to ||
+            pathname.startsWith(`${item.to}/`) ||
+            pathname.startsWith(item.to);
 
           return (
             <Link
